@@ -1,4 +1,4 @@
 import cube
 
-cube = cube.Cube(20)
+cube = cube.Cube(3)
 print(cube)
