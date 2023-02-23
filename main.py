@@ -1,4 +1,7 @@
 import cube
+import visualise
 
 cube = cube.Cube(3)
-print(cube)
+
+
+visualise.main(['F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'])

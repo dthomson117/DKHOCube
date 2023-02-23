@@ -19,7 +19,7 @@ surfaces = ((0, 1, 2, 3), (3, 2, 7, 6), (6, 7, 5, 4), (4, 5, 1, 0), (1, 5, 7, 2)
 colors = ((1, 0, 0), (0, 1, 0), (1, 0.5, 0), (1, 1, 0), (1, 1, 1), (0, 0, 1))
 
 
-class Cube():
+class Cubie:
     def __init__(self, id, N, scale):
         self.N = N
         self.scale = scale
@@ -66,38 +66,48 @@ class Cube():
 
 
 class EntireCube():
-    def __init__(self, N, scale):
+    def __init__(self, N, scale, moves):
         self.N = N
         cr = range(self.N)
-        self.cubes = [Cube((x, y, z), self.N, scale) for x in cr for y in cr for z in cr]
+        self.cubes = [Cubie((x, y, z), self.N, scale) for x in cr for y in cr for z in cr]
 
-    def mainloop(self):
-
-        rot_cube_map = {K_UP: (-1, 0), K_DOWN: (1, 0), K_LEFT: (0, -1), K_RIGHT: (0, 1)}
-        rot_slice_map = {
+        self.rot_cube_map = {K_UP: (-1, 0), K_DOWN: (1, 0), K_LEFT: (0, -1), K_RIGHT: (0, 1)}
+        self.rot_slice_map = {
             'L': (0, 0, 1), 'R': (0, 2, 1), 'D': (1, 0, 1),
             'U': (1, 2, 1), 'B': (2, 0, 1), 'F': (2, 2, 1),
             'L`': (0, 0, -1), 'R`': (0, 2, -1), 'D`': (1, 0, -1),
             'U`': (1, 2, -1), 'B`': (2, 0, -1), 'F`': (2, 2, -1),
         }
 
+        for move in moves:
+            if move not in self.rot_slice_map.keys():
+                raise ValueError("Invalid move given: " + str(move))
+
+        self.moves = moves
+
+    def mainloop(self):
+        MOVECUBE = 1000  # Move cube every 1s
+
         ang_x, ang_y, rot_cube = 40, 40, (0, 0)
         animate, animate_ang, animate_speed = False, 0, 5
         action = (0, 0, 0)
-        while True:
 
+        move_cube = pygame.USEREVENT + 1
+        pygame.time.set_timer(move_cube, MOVECUBE)
+
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
                 if event.type == KEYDOWN:
-                    if event.key in rot_cube_map:
-                        rot_cube = rot_cube_map[event.key]
-                    if not animate and event.key in rot_slice_map:
-                        animate, action = True, rot_slice_map[event.key]
+                    if event.key in self.rot_cube_map:
+                        rot_cube = self.rot_cube_map[event.key]
                 if event.type == KEYUP:
-                    if event.key in rot_cube_map:
+                    if event.key in self.rot_cube_map:
                         rot_cube = (0, 0)
+                if event.type == move_cube and len(self.moves) > 0:
+                    animate, action = True, self.rot_slice_map[self.moves.pop(0)]
 
             ang_x += rot_cube[0] * 2
             ang_y += rot_cube[1] * 2
@@ -125,7 +135,7 @@ class EntireCube():
             pygame.time.wait(10)
 
 
-def main():
+def main(moves=[]):
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
@@ -134,11 +144,10 @@ def main():
     glMatrixMode(GL_PROJECTION)
     gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
 
-    NewEntireCube = EntireCube(3, 1.5)
+    NewEntireCube = EntireCube(3, 1.5, moves)
     NewEntireCube.mainloop()
-
-
-if __name__ == '__main__':
-    main()
     pygame.quit()
     quit()
+
+
+
