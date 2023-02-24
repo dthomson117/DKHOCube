@@ -46,6 +46,10 @@ class Cube:
                     self.cube[i][j][k] = colour
 
     def __str__(self):
+        """
+        Makes the print string nicer :)
+        :return: A nice print string :)
+        """
         printstring = ""
         for face in self.cube:
             for row in face:

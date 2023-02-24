@@ -80,12 +80,32 @@ class EntireCube():
             'L`': (0, 0, -1), 'R`': (0, 2, -1), 'D`': (1, 0, -1),
             'U`': (1, 2, -1), 'B`': (2, 0, -1), 'F`': (2, 2, -1),
         }
+        self.dupe_moves = ['L2', 'R2', 'D2', 'U2', 'B2', 'F2']
+
+        moves = self.preprocess_moves(moves)
+        print(moves)
 
         for move in moves:
-            if move not in self.rot_slice_map.keys():
+            if move not in self.rot_slice_map.keys() and move not in self.dupe_moves:
                 raise ValueError("Invalid move given: " + str(move))
 
         self.moves = moves
+
+    def preprocess_moves(self, moves):
+        """
+        Replaces double moves (i.e. 'L2') with two single moves ('L', 'L')
+        :param moves: List of moves to process
+        :return: List of moves with double moves replaced
+        """
+        new_moves = []
+
+        for move in moves:
+            if '2' in move:
+                new_moves.extend([move[0]] * 2)
+            else:
+                new_moves.append(move)
+
+        return new_moves
 
     def mainloop(self):
         MOVECUBE = 1000  # Move cube every 1s
