@@ -1,7 +1,9 @@
 import cube
 import visualise
 
-cube = cube.Cube(3)
 
+if __name__ == "__main__":
+    cube = cube.Cube(3)
+    print(cube.is_solved())
+    visualise.main(['F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'])
 
-visualise.main(['F', 'F', 'F', 'F', 'F', 'F', 'F', 'F'])

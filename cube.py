@@ -8,7 +8,7 @@ class Cube:
 
     # White, Green, Red, Blue, Orange, Yellow
     colours = ['w', 'g', 'r', 'b', 'o', 'y']
-    moves = []
+    moves = ['F', 'F`', 'B', 'B`', 'L', 'L`', 'R', 'R`', 'U', 'U`', 'D', 'D`']
 
     def __init__(self, cube_size):
         """
@@ -57,6 +57,16 @@ class Cube:
         :param shuffle_amount: Number of moves applied to the cube
         """
         return
+
+    def is_solved(self):
+        """
+        Returns a boolean stating if the cube is solved or not
+        :return: True if solved, else False
+        """
+        for face in self.cube:
+            if face.count(face[0]) != len(face):
+                return False
+        return True
 
     def rot_front(self, cw):
         """
