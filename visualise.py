@@ -1,4 +1,4 @@
-"""This is taken from the stack overflow question asked here:
+"""This is taken from the brilliant stack overflow answer here:
 https://stackoverflow.com/questions/50303616/how-to-rotate-slices-of-a-rubiks-cube-in-python-pyopengl
 
 Modified to take a string of inputs to rotate cube, as well as initialise cube from shuffled state.
@@ -67,8 +67,16 @@ class Cubie:
         glPopMatrix()
 
 
-class EntireCube():
-    def __init__(self, N, scale, moves):
+class EntireCube:
+    def __init__(self, N, scale, shuffle_moves, solve_moves):
+        """
+        Create the cube
+
+        :param N: Size of the cube
+        :param scale: Scale to set the cube at
+        :param shuffle_moves: Moves to shuffle the cube
+        :param solve_moves: Moves to solve the cube
+        """
         self.N = N
         cr = range(self.N)
         self.cubes = [Cubie((x, y, z), self.N, scale) for x in cr for y in cr for z in cr]
@@ -82,14 +90,11 @@ class EntireCube():
         }
         self.dupe_moves = ['L2', 'R2', 'D2', 'U2', 'B2', 'F2']
 
-        moves = self.preprocess_moves(moves)
-        print(moves)
+        shuffle_moves = self.preprocess_moves(shuffle_moves)
+        solve_moves = self.preprocess_moves(solve_moves)
 
-        for move in moves:
-            if move not in self.rot_slice_map.keys() and move not in self.dupe_moves:
-                raise ValueError("Invalid move given: " + str(move))
-
-        self.moves = moves
+        self.shuffle_moves = shuffle_moves
+        self.solve_moves = solve_moves
 
     def preprocess_moves(self, moves):
         """
@@ -97,6 +102,10 @@ class EntireCube():
         :param moves: List of moves to process
         :return: List of moves with double moves replaced
         """
+        for move in moves:
+            if move not in self.rot_slice_map.keys() and move not in self.dupe_moves:
+                raise ValueError("Invalid move given: " + str(move))
+
         new_moves = []
 
         for move in moves:
@@ -128,8 +137,11 @@ class EntireCube():
                 if event.type == KEYUP:
                     if event.key in self.rot_cube_map:
                         rot_cube = (0, 0)
-                if event.type == move_cube and len(self.moves) > 0:
-                    animate, action = True, self.rot_slice_map[self.moves.pop(0)]
+                if event.type == move_cube
+                    if len(self.shuffle_moves) > 0:
+                        animate, action = True, self.rot_slice_map[self.shuffle_moves.pop(0)]
+                    elif len(self.solve_moves) < 0:
+                        animate, action = True, self.rot_slice_map[self.solve_moves.pop(0)]
 
             ang_x += rot_cube[0] * 2
             ang_y += rot_cube[1] * 2
@@ -139,6 +151,11 @@ class EntireCube():
             glTranslatef(0, 0, -40)
             glRotatef(ang_y, 0, 1, 0)
             glRotatef(ang_x, 1, 0, 0)
+
+            if self.shuffle_moves:
+                glClearColor(0.5, 0, 0, 0.5)
+            else:
+                glClearColor(0, 0.5, 0, 0.5)
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
@@ -157,7 +174,7 @@ class EntireCube():
             pygame.time.wait(10)
 
 
-def main(moves=[]):
+def show_moves(moves=[]):
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
@@ -170,6 +187,3 @@ def main(moves=[]):
     NewEntireCube.mainloop()
     pygame.quit()
     quit()
-
-
-

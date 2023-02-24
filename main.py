@@ -7,6 +7,6 @@ if __name__ == "__main__":
     moves = cube.shuffle(25)
     print(moves)
     print(cube.is_solved())
-    visualise.main(moves)
+    visualise.show_moves(moves)
     print(cube.is_solved())
 

@@ -79,7 +79,7 @@ class Cube:
         for i in range(shuffle_amount):
             move = random.choice(list(self.move_map.keys()))
             move_list.append(move)
-            self.run_moves(move)
+            self.run_moves(move_list)
 
         return move_list
 
