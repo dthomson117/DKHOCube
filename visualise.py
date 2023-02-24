@@ -2,6 +2,8 @@
 https://stackoverflow.com/questions/50303616/how-to-rotate-slices-of-a-rubiks-cube-in-python-pyopengl
 
 Modified to take a string of inputs to rotate cube, as well as initialise cube from shuffled state.
+
+Only works for 3x3 cube
 """
 
 import pygame
@@ -16,7 +18,7 @@ vertices = (
 )
 edges = ((0, 1), (0, 3), (0, 4), (2, 1), (2, 3), (2, 7), (6, 3), (6, 4), (6, 7), (5, 1), (5, 4), (5, 7))
 surfaces = ((0, 1, 2, 3), (3, 2, 7, 6), (6, 7, 5, 4), (4, 5, 1, 0), (1, 5, 7, 2), (4, 0, 3, 6))
-colors = ((1, 0, 0), (0, 1, 0), (1, 0.5, 0), (1, 1, 0), (1, 1, 1), (0, 0, 1))
+colors = ((0, 0, 1), (1, 0, 0), (0, 1, 0), (1, 0.5, 0), (1, 1, 0), (1, 1, 1))
 
 
 class Cubie:
@@ -88,7 +90,7 @@ class EntireCube():
     def mainloop(self):
         MOVECUBE = 1000  # Move cube every 1s
 
-        ang_x, ang_y, rot_cube = 40, 40, (0, 0)
+        ang_x, ang_y, rot_cube = 45, 45, (0, 0)
         animate, animate_ang, animate_speed = False, 0, 5
         action = (0, 0, 0)
 

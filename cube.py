@@ -8,7 +8,20 @@ class Cube:
 
     # White, Green, Red, Blue, Orange, Yellow
     colours = ['w', 'g', 'r', 'b', 'o', 'y']
-    moves = ['F', 'F`', 'B', 'B`', 'L', 'L`', 'R', 'R`', 'U', 'U`', 'D', 'D`']
+
+    move_map = {'F': ['rot_front'], 'F`': ['rot_front_acw'],
+                'B': ['rot_back'], 'B`': ['rot_back_acw'],
+                'L': ['rot_left'], 'L`': ['rot_left_acw'],
+                'R': ['rot_right'], 'R`': ['rot_right_acw'],
+                'U': ['rot_up'], 'U`': ['rot_up_acw'],
+                'D': ['rot_down'], 'D`': ['rot_down_acw'],
+                'F2': ['rot_front', 'rot_front'],
+                'B2': ['rot_back', 'rot_back'],
+                'L2': ['rot_left', 'rot_left'],
+                'R2': ['rot_right', 'rot_right'],
+                'U2': ['rot_up', 'rot_up'],
+                'D2': ['rot_down', 'rot_down'],
+                }
 
     def __init__(self, cube_size):
         """
@@ -55,7 +68,19 @@ class Cube:
         Shuffles the cube randomly shuffle_amount of moves
 
         :param shuffle_amount: Number of moves applied to the cube
+        :returns: The list of moves applied
         """
+        move_list = []
+
+        for i in range(shuffle_amount):
+            move = self.moves[random.randint(0, len(self.moves) - 1)]
+            if len(move)
+            move_list.append(move)
+            getattr(self, self.move_map[move])
+
+        return move_list
+
+    def run_moves(self, moves):
         return
 
     def is_solved(self):
@@ -68,50 +93,74 @@ class Cube:
                 return False
         return True
 
-    def rot_front(self, cw):
+    def rot_front(self):
         """
-        Rotates the side of the cube facing the solver (the front of the cube)
-
-        :param cw: True if the rotation is clockwise, otherwise False
+        Rotates the side of the cube facing the solver clockwise (the front of the cube)
         """
-        return
 
-    def rot_left(self, cw):
+    def rot_front_acw(self):
         """
-        Rotates the side of the cube on the left relative to the solver
-
-        :param cw: True if the rotation is clockwise, otherwise False
+        Rotates the side of the cube facing the solver anti-clockwise (the front of the cube)
+        :return:
         """
         return
 
-    def rot_right(self, cw):
+    def rot_left(self):
         """
-        Rotates the side of the cube on the right relative to the solver
-
-        :param cw: True if the rotation is clockwise, otherwise False
+        Rotates the side of the cube on the left clockwise relative to the solver
         """
         return
 
-    def rot_back(self, cw):
+    def rot_left_acw(self):
         """
-        Rotates the side of the cube on the back relative to the solver
-
-        :param cw: True if the rotation is clockwise, otherwise False
+        Rotates the side of the cube on the left anti-clockwise relative to the solver
         """
         return
 
-    def rot_down(self, cw):
+    def rot_right(self):
         """
-        Rotates the side of the cube on the bottom relative to the solver
-
-        :param cw: True if the rotation is clockwise, otherwise False
+        Rotates the side of the cube on the right clockwise relative to the solver
         """
         return
 
-    def rot_up(self, cw):
+    def rot_right_acw(self):
         """
-        Rotates the side of the cube on the top relative to the solver
+        Rotates the side of the cube on the right anti-clockwise relative to the solver
+        """
+        return
 
-        :param cw: True if the rotation is clockwise, otherwise False
+    def rot_back(self):
+        """
+        Rotates the side of the cube on the back clockwise relative to the solver
+        """
+        return
+
+    def rot_back_acw(self):
+        """
+        Rotates the side of the cube on the back anti-clockwise relative to the solver
+        """
+        return
+
+    def rot_down(self):
+        """
+        Rotates the side of the cube on the bottom clockwise relative to the solver
+        """
+        return
+
+    def rot_down_acw(self):
+        """
+        Rotates the side of the cube on the bottom anti-clockwise relative to the solver
+        """
+        return
+
+    def rot_up(self):
+        """
+        Rotates the side of the cube on the top clockwise relative to the solver
+        """
+        return
+
+    def rot_up_acw(self):
+        """
+        Rotates the side of the cube on the top anti-clockwise relative to the solver
         """
         return
