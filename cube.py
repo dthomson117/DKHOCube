@@ -73,13 +73,13 @@ class Cube:
         move_list = []
 
         for i in range(shuffle_amount):
-            move = random.choice(list(self.move_map.values()))
-            if len(move) > 1:
-                for m in move:
-                    move_list.append(m)
+            move = random.choice(list(self.move_map.keys()))
+            move_list.append(move)
+            if len(self.move_map[move]) > 1:
+                for m in self.move_map[move]:
+                    getattr(self, m)
             else:
-                move_list.append(move)
-            getattr(self, self.move_map[move])
+                getattr(self, self.move_map[move][0])
 
         return move_list
 
