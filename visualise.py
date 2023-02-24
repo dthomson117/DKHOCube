@@ -90,11 +90,8 @@ class EntireCube:
         }
         self.dupe_moves = ['L2', 'R2', 'D2', 'U2', 'B2', 'F2']
 
-        shuffle_moves = self.preprocess_moves(shuffle_moves)
-        solve_moves = self.preprocess_moves(solve_moves)
-
-        self.shuffle_moves = shuffle_moves
-        self.solve_moves = solve_moves
+        self.shuffle_moves = self.preprocess_moves(shuffle_moves)
+        self.solve_moves = self.preprocess_moves(solve_moves)
 
     def preprocess_moves(self, moves):
         """
@@ -117,7 +114,7 @@ class EntireCube:
         return new_moves
 
     def mainloop(self):
-        MOVECUBE = 1000  # Move cube every 1s
+        MOVECUBE = 500  # Move cube every 1s
 
         ang_x, ang_y, rot_cube = 45, 45, (0, 0)
         animate, animate_ang, animate_speed = False, 0, 5
@@ -137,10 +134,11 @@ class EntireCube:
                 if event.type == KEYUP:
                     if event.key in self.rot_cube_map:
                         rot_cube = (0, 0)
-                if event.type == move_cube
+                if event.type == move_cube:
                     if len(self.shuffle_moves) > 0:
                         animate, action = True, self.rot_slice_map[self.shuffle_moves.pop(0)]
-                    elif len(self.solve_moves) < 0:
+                    elif len(self.solve_moves) > 0:
+                        pygame.time.set_timer(move_cube, 1000)
                         animate, action = True, self.rot_slice_map[self.solve_moves.pop(0)]
 
             ang_x += rot_cube[0] * 2
@@ -152,7 +150,7 @@ class EntireCube:
             glRotatef(ang_y, 0, 1, 0)
             glRotatef(ang_x, 1, 0, 0)
 
-            if self.shuffle_moves:
+            if len(self.shuffle_moves) > 0:
                 glClearColor(0.5, 0, 0, 0.5)
             else:
                 glClearColor(0, 0.5, 0, 0.5)
@@ -174,7 +172,12 @@ class EntireCube:
             pygame.time.wait(10)
 
 
-def show_moves(moves=[]):
+def show_moves(shuffle_moves=None, solve_moves=None):
+    if solve_moves is None:
+        solve_moves = []
+    if shuffle_moves is None:
+        shuffle_moves = []
+
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
@@ -183,7 +186,7 @@ def show_moves(moves=[]):
     glMatrixMode(GL_PROJECTION)
     gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
 
-    NewEntireCube = EntireCube(3, 1.5, moves)
+    NewEntireCube = EntireCube(3, 1.5, shuffle_moves, solve_moves)
     NewEntireCube.mainloop()
     pygame.quit()
     quit()

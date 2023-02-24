@@ -1,12 +1,13 @@
+import copy
+
 import cube
 import visualise
 
 
 if __name__ == "__main__":
     cube = cube.Cube(3)
-    moves = cube.shuffle(25)
-    print(moves)
-    print(cube.is_solved())
-    visualise.show_moves(moves)
-    print(cube.is_solved())
+    shuffle_moves = cube.shuffle(10)
+    solve_moves = copy.deepcopy(shuffle_moves)
+    solve_moves.reverse()
+    visualise.show_moves(shuffle_moves, solve_moves)
 
