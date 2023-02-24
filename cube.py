@@ -29,7 +29,6 @@ class Cube:
 
         :param cube_size: Size of Rubik's Cube
         """
-
         # Handle cubesize
         if 1 < cube_size <= 20:
             self.cube_size = cube_size
@@ -48,6 +47,7 @@ class Cube:
     def __str__(self):
         """
         Makes the print string nicer :)
+
         :return: A nice print string :)
         """
         printstring = ""
@@ -79,20 +79,27 @@ class Cube:
         for i in range(shuffle_amount):
             move = random.choice(list(self.move_map.keys()))
             move_list.append(move)
+            self.run_moves(move)
+
+        return move_list
+
+    def run_moves(self, moves):
+        """
+        Runs the given moves
+
+        :param moves: List of moves
+        """
+        for move in moves:
             if len(self.move_map[move]) > 1:
                 for m in self.move_map[move]:
                     getattr(self, m)
             else:
                 getattr(self, self.move_map[move][0])
 
-        return move_list
-
-    def run_moves(self, moves):
-        return
-
     def is_solved(self):
         """
         Returns a boolean stating if the cube is solved or not
+
         :return: True if solved, else False
         """
         for face in self.cube:
