@@ -1,27 +1,69 @@
 import random
+import numpy as np
+
+
+def rotate_matrix(matrix, cw):
+    """
+    Rotate a matrix
+
+    :param matrix: Matrix to rotate
+    :param cw: Rotate clockwise if True or anti-clockwise if False
+    :return: A rotated matrix
+    """
+    if cw:
+        return list(zip(*matrix[::-1]))
+    else:
+        return list(zip(*matrix))[::-1]
 
 
 class Cube:
     """
     A class for the Rubik's Cube and all corresponding methods and attributes
+
+    A cube is the following colours:
+            |***********|
+            |**W**W**W**|
+            |***********|
+            |**W**W**W**|
+            |***********|
+            |**W**W**W**|
+            |***********|
+            |***********|
+ ***********|***********|***********|***********
+ **O**O**O**|**G**G**G**|**R**R**R**|**B**B**B**
+ ***********|***********|***********|***********
+ **O**O**O**|**G**G**G**|**R**R**R**|**B**B**B**
+ ***********|***********|***********|***********
+ **O**O**O**|**G**G**G**|**R**R**R**|**B**B**B**
+ ***********|***********|***********|***********
+            |**Y**Y**Y**|
+            |***********|
+            |**Y**Y**Y**|
+            |***********|
+            |**Y**Y**Y**|
+            |***********|
     """
 
     # White, Green, Red, Blue, Orange, Yellow
-    colours = ['w', 'g', 'r', 'b', 'o', 'y']
+    colours = ['w', 'o', 'g', 'r', 'b', 'y']
 
-    move_map = {'F': ['rot_front'], 'F`': ['rot_front_acw'],
-                'B': ['rot_back'], 'B`': ['rot_back_acw'],
-                'L': ['rot_left'], 'L`': ['rot_left_acw'],
-                'R': ['rot_right'], 'R`': ['rot_right_acw'],
-                'U': ['rot_up'], 'U`': ['rot_up_acw'],
-                'D': ['rot_down'], 'D`': ['rot_down_acw'],
-                'F2': ['rot_front', 'rot_front'],
-                'B2': ['rot_back', 'rot_back'],
-                'L2': ['rot_left', 'rot_left'],
-                'R2': ['rot_right', 'rot_right'],
-                'U2': ['rot_up', 'rot_up'],
-                'D2': ['rot_down', 'rot_down'],
-                }
+    move_map = {
+        # Standard moves
+        'F': ['rot_front'], 'F`': ['rot_front_acw'],
+        'B': ['rot_back'], 'B`': ['rot_back_acw'],
+        'L': ['rot_left'], 'L`': ['rot_left_acw'],
+        'R': ['rot_right'], 'R`': ['rot_right_acw'],
+        'U': ['rot_up'], 'U`': ['rot_up_acw'],
+        'D': ['rot_down'], 'D`': ['rot_down_acw'],
+
+        # Double moves
+        'F2': ['rot_front', 'rot_front'],
+        'B2': ['rot_back', 'rot_back'],
+        'L2': ['rot_left', 'rot_left'],
+        'R2': ['rot_right', 'rot_right'],
+        'U2': ['rot_up', 'rot_up'],
+        'D2': ['rot_down', 'rot_down'],
+    }
 
     def __init__(self, cube_size):
         """
@@ -36,7 +78,7 @@ class Cube:
             raise ValueError("Cube cubesize cannot be smaller than 2 or larger than 20")
 
         # Create an empty matrix of size cubesize*cubesize*6
-        self.cube = [[[None for x in range(self.cube_size)] for x in range(self.cube_size)] for x in range(6)]
+        self.cube = np.array([[[None for x in range(self.cube_size)] for x in range(self.cube_size)] for x in range(6)])
 
         # Assign colours to each face
         for i, colour in enumerate(self.colours):
@@ -111,6 +153,12 @@ class Cube:
         """
         Rotates the side of the cube facing the solver clockwise (the front of the cube)
         """
+        # Rotate the front face (G)
+        self.cube[3] = list(zip(*self.cube[3][::-1]))
+
+        # W -> R -> Y -> O -> W
+        self.cube[0][2], self.cube[3][:, 0], self.cube[5][0], self.cube[1][:, 2] = \
+            self.cube[3][:, 0], self.cube[5][0], self.cube[1][:, 2], self.cube[0][2]
 
     def rot_front_acw(self):
         """
