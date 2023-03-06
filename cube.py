@@ -67,11 +67,12 @@ class Cube:
         # Create an empty matrix of size cubesize*cubesize*6
         self.cube = np.array([[[None for x in range(self.cube_size)] for x in range(self.cube_size)] for x in range(6)])
 
+        num = 0
         # Assign colours to each face
         for i, colour in enumerate(self.colours):
             for j in range(self.cube_size):
                 for k in range(self.cube_size):
-                    self.cube[i][j][k] = colour
+                    self.cube[i][j][k] = colour# + str(k) + str(j)
 
     def __str__(self):
         """
@@ -139,101 +140,101 @@ class Cube:
         """
         Rotates the side of the cube facing the solver clockwise (the front of the cube)
         """
-        copy_cube = copy.deepcopy(self.cube)
-
         # Rotate the front face (F/G)
-        self.rotate_matrix(self.cube[2])
+        self.cube[2] = self.rotate_matrix(self.cube[2])
+
+        copy_cube = copy.deepcopy(self.cube)
 
         # U -> R -> D -> L -> U
         self.cube[0][2], self.cube[3][:, 0], self.cube[5][0], self.cube[1][:, 2] = \
-            copy_cube[1][:, 2], copy_cube[0][2], copy_cube[3][:, 0], copy_cube[5][0]
+            np.flip(copy_cube[1][:, 2]), copy_cube[0][2], np.flip(copy_cube[3][:, 0]), copy_cube[5][0]
 
     def rot_front_acw(self):
         """
         Rotates the side of the cube facing the solver anti-clockwise (the front of the cube)
         :return:
         """
-        copy_cube = copy.deepcopy(self.cube)
-
         # Rotate the front face (F/G)
-        self.rotate_matrix(self.cube[2], False)
+        self.cube[2] = self.rotate_matrix(self.cube[2], False)
 
-        self.cube[0][2], self.cube[4][:, 0], self.cube[5][0], self.cube[1][:, 2] = \
-            copy_cube[1][:, 2], copy_cube[0][2], copy_cube[4][:, 0], copy_cube[5][0]
-
-    def rot_left(self):
-        """
-        Rotates the side of the cube on the left clockwise relative to the solver
-        """
         copy_cube = copy.deepcopy(self.cube)
 
-        self.rotate_matrix(self.cube[1])
-
-        self.cube[0][:, 0], self.cube[2][:, 0], self.cube[5][:, 0], self.cube[4][:, 2] = \
-            copy_cube[4][:, 2], copy_cube[0][:, 0], copy_cube[2][:, 0], copy_cube[5][:, 0]
-
-    def rot_left_acw(self):
-        """
-        Rotates the side of the cube on the left anti-clockwise relative to the solver
-        """
-        copy_cube = copy.deepcopy(self.cube)
-
-        self.rotate_matrix(self.cube[1], False)
-
-        self.cube[0][:, 0], self.cube[2][:, 0], self.cube[5][:, 0], self.cube[4][:, 2] = \
-            copy_cube[2][:, 0], copy_cube[5][:, 0], copy_cube[4][:, 2], copy_cube[0][:, 0]
-
-    def rot_right(self):
-        """
-        Rotates the side of the cube on the right clockwise relative to the solver
-        """
-        copy_cube = copy.deepcopy(self.cube)
-
-        self.rotate_matrix(self.cube[3])
-
-        self.cube[0][:, 2], self.cube[2][:, 2], self.cube[5][:, 2], self.cube[4][:, 0] = \
-            copy_cube[2][:, 2], copy_cube[5][:, 2], copy_cube[4][:, 0], copy_cube[0][:, 2]
-
-    def rot_right_acw(self):
-        """
-        Rotates the side of the cube on the right anti-clockwise relative to the solver
-        """
-        copy_cube = copy.deepcopy(self.cube)
-
-        self.rotate_matrix(self.cube[3], False)
-
-        self.cube[0][:, 2], self.cube[2][:, 2], self.cube[5][:, 2], self.cube[4][:, 0] = \
-            copy_cube[4][:, 0], copy_cube[0][:, 2], copy_cube[2][:, 2], copy_cube[5][:, 2]
+        self.cube[0][2], self.cube[3][:, 0], self.cube[5][0], self.cube[1][:, 2] = \
+            copy_cube[3][:, 0], np.flip(copy_cube[5][0]), copy_cube[1][:, 2], np.flip(copy_cube[0][2])
 
     def rot_back(self):
         """
         Rotates the side of the cube on the back clockwise relative to the solver
         """
+        self.cube[4] = self.rotate_matrix(self.cube[4])
+
         copy_cube = copy.deepcopy(self.cube)
 
-        self.rotate_matrix(self.cube[4])
-
         self.cube[0][0], self.cube[3][:, 2], self.cube[5][2], self.cube[1][:, 0] = \
-            copy_cube[3][:, 2], copy_cube[5][2], copy_cube[1][:, 0], copy_cube[0][0]
+            copy_cube[3][:, 2], np.flip(copy_cube[5][2]), copy_cube[1][:, 0], np.flip(copy_cube[0][0])
 
     def rot_back_acw(self):
         """
         Rotates the side of the cube on the back anti-clockwise relative to the solver
         """
+        self.cube[4] = self.rotate_matrix(self.cube[4], False)
+
         copy_cube = copy.deepcopy(self.cube)
 
-        self.rotate_matrix(self.cube[4], False)
-
         self.cube[0][0], self.cube[3][:, 2], self.cube[5][2], self.cube[1][:, 0] = \
-            copy_cube[3][:, 2], copy_cube[5][2], copy_cube[1][:, 0], copy_cube[0][0]
+            np.flip(copy_cube[1][:, 0]), copy_cube[0][0], np.flip(copy_cube[3][:, 2]), copy_cube[5][2]
+
+    def rot_left(self):
+        """
+        Rotates the side of the cube on the left clockwise relative to the solver
+        """
+        self.cube[1] = self.rotate_matrix(self.cube[1])
+
+        copy_cube = copy.deepcopy(self.cube)
+
+        self.cube[0][:, 0], self.cube[2][:, 0], self.cube[5][:, 0], self.cube[4][:, 2] = \
+            np.flip(copy_cube[4][:, 2]), copy_cube[0][:, 0], copy_cube[2][:, 0], np.flip(copy_cube[5][:, 0])
+
+    def rot_left_acw(self):
+        """
+        Rotates the side of the cube on the left anti-clockwise relative to the solver
+        """
+        self.cube[1] = self.rotate_matrix(self.cube[1], False)
+
+        copy_cube = copy.deepcopy(self.cube)
+
+        self.cube[0][:, 0], self.cube[2][:, 0], self.cube[5][:, 0], self.cube[4][:, 2] = \
+            copy_cube[2][:, 0], copy_cube[5][:, 0], np.flip(copy_cube[4][:, 2]), np.flip(copy_cube[0][:, 0])
+
+    def rot_right(self):
+        """
+        Rotates the side of the cube on the right clockwise relative to the solver
+        """
+        self.cube[3] = self.rotate_matrix(self.cube[3])
+
+        copy_cube = copy.deepcopy(self.cube)
+
+        self.cube[0][:, 2], self.cube[2][:, 2], self.cube[5][:, 2], self.cube[4][:, 0] = \
+            copy_cube[2][:, 2], copy_cube[5][:, 2], np.flip(copy_cube[4][:, 0]), np.flip(copy_cube[0][:, 2])
+
+    def rot_right_acw(self):
+        """
+        Rotates the side of the cube on the right anti-clockwise relative to the solver
+        """
+        self.cube[3] = self.rotate_matrix(self.cube[3], False)
+
+        copy_cube = copy.deepcopy(self.cube)
+
+        self.cube[0][:, 2], self.cube[2][:, 2], self.cube[5][:, 2], self.cube[4][:, 0] = \
+            np.flip(copy_cube[4][:, 0]), copy_cube[0][:, 2], copy_cube[2][:, 2], np.flip(copy_cube[5][:, 2])
 
     def rot_down(self):
         """
         Rotates the side of the cube on the bottom clockwise relative to the solver
         """
-        copy_cube = copy.deepcopy(self.cube)
+        self.cube[5] = self.rotate_matrix(self.cube[5])
 
-        self.rotate_matrix(self.cube[5])
+        copy_cube = copy.deepcopy(self.cube)
 
         self.cube[1][2], self.cube[2][2], self.cube[3][2], self.cube[4][2] = \
             copy_cube[4][2], copy_cube[1][2], copy_cube[2][2], copy_cube[3][2]
@@ -242,9 +243,9 @@ class Cube:
         """
         Rotates the side of the cube on the bottom anti-clockwise relative to the solver
         """
-        copy_cube = copy.deepcopy(self.cube)
+        self.cube[5] = self.rotate_matrix(self.cube[5], False)
 
-        self.rotate_matrix(self.cube[5], False)
+        copy_cube = copy.deepcopy(self.cube)
 
         self.cube[1][2], self.cube[2][2], self.cube[3][2], self.cube[4][2] = \
             copy_cube[2][2], copy_cube[3][2], copy_cube[4][2], copy_cube[1][2]
@@ -253,9 +254,9 @@ class Cube:
         """
         Rotates the side of the cube on the top clockwise relative to the solver
         """
-        copy_cube = copy.deepcopy(self.cube)
+        self.cube[0] = self.rotate_matrix(self.cube[0])
 
-        self.rotate_matrix(self.cube[0])
+        copy_cube = copy.deepcopy(self.cube)
 
         self.cube[1][0], self.cube[2][0], self.cube[3][0], self.cube[4][0] = \
             copy_cube[2][0], copy_cube[3][0], copy_cube[4][0], copy_cube[1][0]
@@ -264,9 +265,9 @@ class Cube:
         """
         Rotates the side of the cube on the top anti-clockwise relative to the solver
         """
-        copy_cube = copy.deepcopy(self.cube)
+        self.cube[0] = self.rotate_matrix(self.cube[0], False)
 
-        self.rotate_matrix(self.cube[0], False)
+        copy_cube = copy.deepcopy(self.cube)
 
         self.cube[1][0], self.cube[2][0], self.cube[3][0], self.cube[4][0] = \
             copy_cube[4][0], copy_cube[1][0], copy_cube[2][0], copy_cube[3][0]
