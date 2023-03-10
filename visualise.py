@@ -83,10 +83,10 @@ class EntireCube:
 
         self.rot_cube_map = {K_UP: (-1, 0), K_DOWN: (1, 0), K_LEFT: (0, -1), K_RIGHT: (0, 1)}
         self.rot_slice_map = {
-            'L': (0, 0, 1), 'R': (0, 2, -1), 'D': (1, 0, 1),
-            'U': (1, 2, -1), 'B': (2, 0, 1), 'F': (2, 2, -1),
-            'L`': (0, 0, -1), 'R`': (0, 2, 1), 'D`': (1, 0, -1),
-            'U`': (1, 2, 1), 'B`': (2, 0, -1), 'F`': (2, 2, 1),
+            "L": (0, 0, 1), "R": (0, 2, -1), "D": (1, 0, 1),
+            "U": (1, 2, -1), "B": (2, 0, 1), "F": (2, 2, -1),
+            "L'": (0, 0, -1), "R'": (0, 2, 1), "D'": (1, 0, -1),
+            "U'": (1, 2, 1), "B'": (2, 0, -1), "F'": (2, 2, 1),
         }
         self.dupe_moves = ['L2', 'R2', 'D2', 'U2', 'B2', 'F2']
 
@@ -120,6 +120,8 @@ class EntireCube:
         animate, animate_ang, animate_speed = False, 0, 5
         action = (0, 0, 0)
 
+        glClearColor(0.5, 0, 0, 0.5)
+
         move_cube = pygame.USEREVENT + 1
         pygame.time.set_timer(move_cube, MOVECUBE)
 
@@ -137,9 +139,11 @@ class EntireCube:
                 if event.type == move_cube:
                     if len(self.shuffle_moves) > 0:
                         animate, action = True, self.rot_slice_map[self.shuffle_moves.pop(0)]
+
                     elif len(self.solve_moves) > 0:
                         pygame.time.set_timer(move_cube, 1000)
                         animate, action = True, self.rot_slice_map[self.solve_moves.pop(0)]
+                        glClearColor(0, 0.5, 0, 0.5)
 
             ang_x += rot_cube[0] * 2
             ang_y += rot_cube[1] * 2
@@ -149,11 +153,6 @@ class EntireCube:
             glTranslatef(0, 0, -40)
             glRotatef(ang_y, 0, 1, 0)
             glRotatef(ang_x, 1, 0, 0)
-
-            if len(self.shuffle_moves) > 0:
-                glClearColor(0.5, 0, 0, 0.5)
-            else:
-                glClearColor(0, 0.5, 0, 0.5)
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 

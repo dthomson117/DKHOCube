@@ -1,15 +1,16 @@
-import copy
-
+import kociemba
 import cube
 import visualise
 
 if __name__ == "__main__":
     cube = cube.Cube(3)
 
-    moves = cube.random_moves(50)
-    cube.run_moves(moves)
+    shuffle_moves = cube.random_moves(10)
+    cube.run_moves(shuffle_moves)
 
-    print(moves)
-    print(cube)
+    kociemba_string = cube.to_kociemba_string()
 
-    visualise.show_moves(moves)
+    solve_moves = kociemba.solve(kociemba_string).split()
+    cube.run_moves(solve_moves)
+
+    visualise.show_moves(shuffle_moves=shuffle_moves, solve_moves=solve_moves)

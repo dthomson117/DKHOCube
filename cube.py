@@ -32,27 +32,30 @@ class Cube:
     """
 
     # White, Green, Red, Blue, Orange, Yellow
-    colours = ['w', 'o', 'g', 'r', 'b', 'y']
+
+    # colours = ['w', 'o', 'g', 'r', 'b', 'y']
+
+    colours = ['U', 'L', 'F', 'R', 'B', 'D']
 
     move_map = {
         # Standard moves
-        'F': ['rot_front'], 'F`': ['rot_front_acw'],
-        'B': ['rot_back'], 'B`': ['rot_back_acw'],
-        'L': ['rot_left'], 'L`': ['rot_left_acw'],
-        'R': ['rot_right'], 'R`': ['rot_right_acw'],
-        'U': ['rot_up'], 'U`': ['rot_up_acw'],
-        'D': ['rot_down'], 'D`': ['rot_down_acw'],
+        "F": ["rot_front"], "F'": ["rot_front_acw"],
+        "B": ["rot_back"], "B'": ["rot_back_acw"],
+        "L": ["rot_left"], "L'": ["rot_left_acw"],
+        "R": ["rot_right"], "R'": ["rot_right_acw"],
+        "U": ["rot_up"], "U'": ["rot_up_acw"],
+        "D": ["rot_down"], "D'": ["rot_down_acw"],
 
         # Double moves
-        'F2': ['rot_front', 'rot_front'],
-        'B2': ['rot_back', 'rot_back'],
-        'L2': ['rot_left', 'rot_left'],
-        'R2': ['rot_right', 'rot_right'],
-        'U2': ['rot_up', 'rot_up'],
-        'D2': ['rot_down', 'rot_down'],
+        "F2": ["rot_front", "rot_front"],
+        "B2": ["rot_back", "rot_back"],
+        "L2": ["rot_left", "rot_left"],
+        "R2": ["rot_right", "rot_right"],
+        "U2": ["rot_up", "rot_up"],
+        "D2": ["rot_down", "rot_down"],
     }
 
-    def __init__(self, cube_size):
+    def __init__(self, cube_size=3):
         """
         Cube builder
 
@@ -67,12 +70,11 @@ class Cube:
         # Create an empty matrix of size cubesize*cubesize*6
         self.cube = np.array([[[None for x in range(self.cube_size)] for x in range(self.cube_size)] for x in range(6)])
 
-        num = 0
         # Assign colours to each face
         for i, colour in enumerate(self.colours):
             for j in range(self.cube_size):
                 for k in range(self.cube_size):
-                    self.cube[i][j][k] = colour# + str(k) + str(j)
+                    self.cube[i][j][k] = colour
 
     def __str__(self):
         """
@@ -132,9 +134,26 @@ class Cube:
         :return: True if solved, else False
         """
         for face in self.cube:
-            if face.count(face[0]) != len(face):
+            if np.count_nonzero(face == face[0][0]) < 9:
                 return False
         return True
+
+    def to_kociemba_string(self):
+        """
+        The kociemba package takes the cube state in a strange order. This returns the cube formatted to a string to
+        pass to the kociemba solver
+
+        :return: Cube in a string format for the kociemba solver
+        """
+        # Kociemba solver takes string in the order U R F D L B
+        order = [0, 3, 2, 5, 1, 4]
+        kociemba_string = ''
+        for index in order:
+            for row in self.cube[index]:
+                for elem in row:
+                    kociemba_string += str(elem)
+
+        return kociemba_string
 
     def rot_front(self):
         """
