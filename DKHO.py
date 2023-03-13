@@ -6,5 +6,6 @@ import multiprocessing
 
 pool = multiprocessing.Pool()
 
+
 toolbox = base.Toolbox()
 toolbox.register("map", pool.map)
