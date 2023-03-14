@@ -11,7 +11,7 @@ import krill
 NUM_KRILL = 25
 
 pool = multiprocessing.Pool()
-creator.create("Fitness", base.Fitness, weights=(-1.0))
+creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Individual", krill.Krill, fitness=creator.Fitness)
 
 toolbox = base.Toolbox()
@@ -24,7 +24,9 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("evaluate", benchmarks.kursawe)
 
 
-
-
-def evaluate_krill(individual, scrambled_cube):
-    return
+def fitness(individual):
+    solution = individual.cube.solve_kociemba()
+    if solution == ['']:
+        return 0
+    else:
+        return len(solution)

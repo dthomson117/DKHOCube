@@ -162,7 +162,7 @@ class Cube:
         # Rotate the front face (F/G)
         self.cube[2] = self.rotate_matrix(self.cube[2])
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         # U -> R -> D -> L -> U
         self.cube[0][2], self.cube[3][:, 0], self.cube[5][0], self.cube[1][:, 2] = \
@@ -176,7 +176,7 @@ class Cube:
         # Rotate the front face (F/G)
         self.cube[2] = self.rotate_matrix(self.cube[2], False)
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[0][2], self.cube[3][:, 0], self.cube[5][0], self.cube[1][:, 2] = \
             copy_cube[3][:, 0], np.flip(copy_cube[5][0]), copy_cube[1][:, 2], np.flip(copy_cube[0][2])
@@ -187,7 +187,7 @@ class Cube:
         """
         self.cube[4] = self.rotate_matrix(self.cube[4])
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[0][0], self.cube[3][:, 2], self.cube[5][2], self.cube[1][:, 0] = \
             copy_cube[3][:, 2], np.flip(copy_cube[5][2]), copy_cube[1][:, 0], np.flip(copy_cube[0][0])
@@ -198,7 +198,7 @@ class Cube:
         """
         self.cube[4] = self.rotate_matrix(self.cube[4], False)
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[0][0], self.cube[3][:, 2], self.cube[5][2], self.cube[1][:, 0] = \
             np.flip(copy_cube[1][:, 0]), copy_cube[0][0], np.flip(copy_cube[3][:, 2]), copy_cube[5][2]
@@ -209,7 +209,7 @@ class Cube:
         """
         self.cube[1] = self.rotate_matrix(self.cube[1])
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[0][:, 0], self.cube[2][:, 0], self.cube[5][:, 0], self.cube[4][:, 2] = \
             np.flip(copy_cube[4][:, 2]), copy_cube[0][:, 0], copy_cube[2][:, 0], np.flip(copy_cube[5][:, 0])
@@ -220,7 +220,7 @@ class Cube:
         """
         self.cube[1] = self.rotate_matrix(self.cube[1], False)
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[0][:, 0], self.cube[2][:, 0], self.cube[5][:, 0], self.cube[4][:, 2] = \
             copy_cube[2][:, 0], copy_cube[5][:, 0], np.flip(copy_cube[4][:, 2]), np.flip(copy_cube[0][:, 0])
@@ -231,7 +231,7 @@ class Cube:
         """
         self.cube[3] = self.rotate_matrix(self.cube[3])
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[0][:, 2], self.cube[2][:, 2], self.cube[5][:, 2], self.cube[4][:, 0] = \
             copy_cube[2][:, 2], copy_cube[5][:, 2], np.flip(copy_cube[4][:, 0]), np.flip(copy_cube[0][:, 2])
@@ -242,7 +242,7 @@ class Cube:
         """
         self.cube[3] = self.rotate_matrix(self.cube[3], False)
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[0][:, 2], self.cube[2][:, 2], self.cube[5][:, 2], self.cube[4][:, 0] = \
             np.flip(copy_cube[4][:, 0]), copy_cube[0][:, 2], copy_cube[2][:, 2], np.flip(copy_cube[5][:, 2])
@@ -253,7 +253,7 @@ class Cube:
         """
         self.cube[5] = self.rotate_matrix(self.cube[5])
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[1][2], self.cube[2][2], self.cube[3][2], self.cube[4][2] = \
             copy_cube[4][2], copy_cube[1][2], copy_cube[2][2], copy_cube[3][2]
@@ -264,7 +264,7 @@ class Cube:
         """
         self.cube[5] = self.rotate_matrix(self.cube[5], False)
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[1][2], self.cube[2][2], self.cube[3][2], self.cube[4][2] = \
             copy_cube[2][2], copy_cube[3][2], copy_cube[4][2], copy_cube[1][2]
@@ -275,7 +275,7 @@ class Cube:
         """
         self.cube[0] = self.rotate_matrix(self.cube[0])
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[1][0], self.cube[2][0], self.cube[3][0], self.cube[4][0] = \
             copy_cube[2][0], copy_cube[3][0], copy_cube[4][0], copy_cube[1][0]
@@ -286,7 +286,7 @@ class Cube:
         """
         self.cube[0] = self.rotate_matrix(self.cube[0], False)
 
-        copy_cube = copy.deepcopy(self.cube)
+        copy_cube = copy.copy(self.cube)
 
         self.cube[1][0], self.cube[2][0], self.cube[3][0], self.cube[4][0] = \
             copy_cube[4][0], copy_cube[1][0], copy_cube[2][0], copy_cube[3][0]

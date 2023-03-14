@@ -1,9 +1,11 @@
 import cube
+import copy
 
 
 class Krill:
     def __init__(self, shuffled_cube):
-        self.cube = shuffled_cube
+        self.shuffled_cube = shuffled_cube
+        self.krill_move_cube = copy.copy(shuffled_cube)
         self.moves = []
 
     def get_moves(self):
@@ -13,5 +15,6 @@ class Krill:
         self.moves.append(move)
 
     def get_cube_state(self):
-        self.cube.run_moves(self.moves)
-        return self.cube
+        self.krill_move_cube = copy.copy(self.shuffled_cube)
+        self.krill_move_cube.run_moves(self.moves)
+        return self.krill_move_cube
