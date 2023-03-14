@@ -1,7 +1,7 @@
 import copy
 import random
 import numpy as np
-
+import kociemba
 
 class Cube:
     """
@@ -290,6 +290,10 @@ class Cube:
 
         self.cube[1][0], self.cube[2][0], self.cube[3][0], self.cube[4][0] = \
             copy_cube[4][0], copy_cube[1][0], copy_cube[2][0], copy_cube[3][0]
+
+    def solve_kociemba(self):
+        kociemba_string = self.to_kociemba_string()
+        return kociemba.solve(kociemba_string).split()
 
     @staticmethod
     def rotate_matrix(matrix, cw=True):

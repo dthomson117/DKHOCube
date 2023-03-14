@@ -1,4 +1,3 @@
-import kociemba
 import cube
 import visualise
 
@@ -10,7 +9,9 @@ if __name__ == "__main__":
 
     kociemba_string = cube.to_kociemba_string()
 
-    solve_moves = kociemba.solve(kociemba_string).split()
+    solve_moves = cube.solve_kociemba()
     cube.run_moves(solve_moves)
+
+    print(cube)
 
     visualise.show_moves(shuffle_moves=shuffle_moves, solve_moves=solve_moves)
