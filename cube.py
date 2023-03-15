@@ -3,6 +3,7 @@ import random
 import numpy as np
 import kociemba
 
+
 class Cube:
     """
     A class for the Rubik's Cube and all corresponding methods and attributes
@@ -55,7 +56,7 @@ class Cube:
         "D2": ["rot_down", "rot_down"],
     }
 
-    def __init__(self, cube_size=3):
+    def __init__(self, cube_size=3, shuffle_amount=None):
         """
         Cube builder
 
@@ -75,6 +76,10 @@ class Cube:
             for j in range(self.cube_size):
                 for k in range(self.cube_size):
                     self.cube[i][j][k] = colour
+
+        if shuffle_amount:
+            self.shuffle_moves = self.random_moves(shuffle_amount)
+            self.run_moves(self.shuffle_moves)
 
     def __str__(self):
         """
@@ -99,6 +104,9 @@ class Cube:
                 for k in range(self.cube_size):
                     self.cube[i][j][k] = colour
 
+    def get_shuffle_moves(self):
+        return self.shuffle_moves
+
     def random_moves(self, shuffle_amount):
         """
         Shuffles the cube randomly shuffle_amount of moves
@@ -121,7 +129,9 @@ class Cube:
         :param moves: List of moves
         """
         for move in moves:
-            if len(self.move_map[move]) > 1:
+            if move == '':
+                return
+            elif len(self.move_map[move]) > 1:
                 for m in self.move_map[move]:
                     getattr(self, m)()
             else:
