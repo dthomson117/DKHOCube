@@ -1,16 +1,12 @@
 import copy
-
 import numpy
-from deap import base, algorithms
-from deap import benchmarks
-from deap import creator
-from deap import tools
-import random
 import multiprocessing
 import matplotlib.pyplot as plt
-
 import cube
-import krill
+from deap import base, algorithms
+from deap import creator
+from deap import tools
+
 
 NUM_KRILL = 25
 SHUFFLE_AMOUNT = 5
