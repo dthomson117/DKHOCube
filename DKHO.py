@@ -3,18 +3,20 @@ import numpy
 import multiprocessing
 import matplotlib.pyplot as plt
 import cube
+import random
 from deap import base, algorithms
 from deap import creator
 from deap import tools
 
-
 NUM_KRILL = 25
 SHUFFLE_AMOUNT = 5
 NGEN = 30
-LAMBDA = 400
+LAMBDA = NGEN
 CXPB = 0.5
-MUTPB = 0.5
+MUTPB = 0.2
 EVAL_DEPTH = 3
+MIN_MUTATE = 1
+MAX_MUTATE = 3
 
 shuffled_cube = cube.Cube(shuffle_amount=SHUFFLE_AMOUNT)
 
@@ -35,12 +37,24 @@ def fitness(depth, individual):
         return len(solution),
 
 
-def mutate(krill):
+def mutate(krill, min_mutate=0, max_mutate=0, indpb=0.0):
+    if indpb > random.random():
+        if len(krill) == 0:
+            return krill,
+        elif len(krill) == 1:
+            mutates = [0]
+        elif len(krill) < max_mutate:
+            mutates = random.sample(range(0, len(krill), random.randint(min_mutate, len(krill))))
+        else:
+            try:
+                mutates = random.sample(range(0, len(krill), random.randint(min_mutate, max_mutate)))
+            except ValueError:
+                print("Somethings gone wrong with mutation!")
+                raise ValueError
+
+        for index in mutates:
+            krill[index] = cube.Cube.random_moves(1)
     return krill,
-
-
-def krill_selection(pop, mu):
-    return pop
 
 
 def move_selection(individual):
@@ -55,9 +69,10 @@ def init_krill(individual):
     individual = creator.Particle()
     return individual
 
+
 # This is taken from the DEAP GitHub, I've replicated it here so I can modify it to have move selection for the krill
 def eaMuPlusLambdaWithMoveSelection(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
-                   stats=None, halloffame=None, verbose=__debug__):
+                                    stats=None, halloffame=None, verbose=__debug__):
     r"""This is the :math:`(\mu + \lambda)` evolutionary algorithm.
     :param population: A list of individuals.
     :param toolbox: A :class:`~deap.base.Toolbox` that contains the evolution
@@ -159,8 +174,8 @@ if __name__ == '__main__':
     toolbox.register("swarm", tools.initRepeat, creator.Swarm, toolbox.particle)
 
     toolbox.register("mate", mate)
-    toolbox.register("mutate", mutate)
-    toolbox.register("select", krill_selection)
+    toolbox.register("mutate", mutate, min_mutate=MIN_MUTATE, max_mutate=MAX_MUTATE, indpb=MUTPB)
+    toolbox.register("select", tools.selDoubleTournament, )
     toolbox.register("evaluate", fitness, EVAL_DEPTH)
 
     swarm = toolbox.swarm(n=NUM_KRILL)
@@ -173,7 +188,8 @@ if __name__ == '__main__':
     logbook = tools.Logbook()
     hof = tools.HallOfFame(10)
 
-    swarm, logbook = eaMuPlusLambdaWithMoveSelection(swarm, toolbox, NUM_KRILL, LAMBDA, CXPB, MUTPB, NGEN, stats, hof, verbose=True)
+    swarm, logbook = eaMuPlusLambdaWithMoveSelection(swarm, toolbox, NUM_KRILL, LAMBDA, CXPB, MUTPB, NGEN, stats, hof,
+                                                     verbose=True)
 
     gen = logbook.select("gen")
     avgs = logbook.select("avg")
