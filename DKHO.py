@@ -9,7 +9,7 @@ from deap import creator
 from deap import tools
 
 NUM_KRILL = 25
-SHUFFLE_AMOUNT = 5
+SHUFFLE_AMOUNT = 15
 NGEN = 30
 LAMBDA = NGEN
 CXPB = 0.5
@@ -17,6 +17,8 @@ MUTPB = 0.2
 EVAL_DEPTH = 3
 MIN_MUTATE = 1
 MAX_MUTATE = 3
+SELECTION_SIZE = 4
+PARSIMONY_SIZE = 2
 
 shuffled_cube = cube.Cube(shuffle_amount=SHUFFLE_AMOUNT)
 
@@ -78,7 +80,7 @@ def eaMuPlusLambdaWithMoveSelection(population, toolbox, mu, lambda_, cxpb, mutp
     :param toolbox: A :class:`~deap.base.Toolbox` that contains the evolution
                     operators.
     :param mu: The number of individuals to select for the next generation.
-    :param lambda\_: The number of children to produce at each generation.
+    :param lambda_: The number of children to produce at each generation.
     :param cxpb: The probability that an offspring is produced by crossover.
     :param mutpb: The probability that an offspring is produced by mutation.
     :param ngen: The number of generation.
@@ -175,7 +177,7 @@ if __name__ == '__main__':
 
     toolbox.register("mate", mate)
     toolbox.register("mutate", mutate, min_mutate=MIN_MUTATE, max_mutate=MAX_MUTATE, indpb=MUTPB)
-    toolbox.register("select", tools.selDoubleTournament, )
+    toolbox.register("select", tools.selDoubleTournament, fitness_size=SELECTION_SIZE, parsimony_size=PARSIMONY_SIZE, fitness_first=True, )
     toolbox.register("evaluate", fitness, EVAL_DEPTH)
 
     swarm = toolbox.swarm(n=NUM_KRILL)
@@ -200,3 +202,4 @@ if __name__ == '__main__':
     ax.set_xlabel("Generation")
     ax.set_ylabel("Fitness (value)")
     plt.show()
+    print(hof)
