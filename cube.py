@@ -128,6 +128,8 @@ class Cube:
 
         :param moves: List of moves
         """
+        if not moves:
+            return
         for move in moves:
             if move == '':
                 return
