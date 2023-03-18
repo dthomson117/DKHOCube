@@ -10,9 +10,9 @@ from deap import tools
 
 
 class DKHO:
-    NUM_KRILL = 25
+    NUM_KRILL = 100
     SHUFFLE_AMOUNT = 15
-    NGEN = 30
+    NGEN = 100
     LAMBDA = NGEN
     CXPB = 0.5
     MUTPB = 0.2
@@ -21,9 +21,10 @@ class DKHO:
     MAX_MUTATE = 3
     SELECTION_SIZE = 4
     PARSIMONY_SIZE = 2
+    hall_of_fame = []
 
-    def __init__(self, shuffled_cube):
-        self.shuffled_cube = shuffled_cube
+    def __init__(self, cube_to_solve):
+        self.shuffled_cube = cube_to_solve
         pool = multiprocessing.Pool()
 
         toolbox = base.Toolbox()
@@ -62,7 +63,7 @@ class DKHO:
         ax.set_xlabel("Generation")
         ax.set_ylabel("Fitness (value)")
         plt.show()
-        print(hof)
+        self.hall_of_fame = hof
 
     def fitness(self, depth, krill):
         """
@@ -102,16 +103,16 @@ class DKHO:
             elif len(krill) == 1:
                 mutates = [0]
             elif len(krill) < max_mutate:
-                mutates = random.sample(range(0, len(krill), random.randint(min_mutate, len(krill))))
+                mutates = random.sample(range(0, len(krill)), k=random.randint(min_mutate, len(krill)))
             else:
                 try:
-                    mutates = random.sample(range(0, len(krill), random.randint(min_mutate, max_mutate)))
+                    mutates = random.sample(range(0, len(krill)), k=random.randint(min_mutate, max_mutate))
                 except ValueError:
                     print("Somethings gone wrong with mutation!")
                     raise ValueError
 
             for index in mutates:
-                krill[index] = cube.Cube.random_moves(1)
+                krill[index] = self.shuffled_cube.random_moves(1)[0]
         return krill,
 
     def move_selection(self, swarm):
@@ -120,12 +121,13 @@ class DKHO:
             fitnesses = {}
 
             # Current state the krill is in is krill_cube
-            krill_cube = copy.deepcopy(shuffled_cube.run_moves(krill))
+            self.shuffled_cube.run_moves(krill)
+            krill_cube = copy.deepcopy(self.shuffled_cube)
 
             for move in cube.Cube.move_map.keys():
                 # We will clone this cube and assess each possible move on it
                 temp_cube = copy.deepcopy(krill_cube)
-                temp_cube.run_moves(move)
+                temp_cube.run_moves([move])
                 fitnesses[move] = len(temp_cube.solve_kociemba())
 
             # We now have a dictionary of the fitnesses of each move
@@ -135,18 +137,22 @@ class DKHO:
             best_moves = list(filter(lambda x: fitnesses[x] == minval, fitnesses))
 
             # If the best move(s) have a fitness below the threshold, we will choose it (or a random one if multiple)
-            if minval < threshold:
+            if minval < threshold.values[0]:
                 if len(best_moves) > 1:
-                    chosen_move = cube.Cube.move_map[best_moves[random.randint(0, len(best_moves))]]
+                    chosen_move = random.choice(best_moves)
                 else:
-                    chosen_move = cube.Cube.move_map[best_moves[0]]
+                    chosen_move = best_moves[0]
             # Otherwise we will randomly choose a move based on its fitness
             else:
                 # We also give the option for the krill to not move
-                fitnesses[''] = krill.fitness
-                chosen_move = weighted_random_choice(fitnesses)
+                fitnesses[''] = krill.fitness.values[0]
+                chosen_move = self.weighted_random_choice(fitnesses)
 
             krill.append(chosen_move)
+            try:
+                krill.remove('')
+            except ValueError:
+                return
 
     def weighted_random_choice(self, choices):
         max = sum(choices[choice] for choice in choices)
@@ -155,7 +161,7 @@ class DKHO:
         for choice in choices:
             current += choices[choice]
             if current > pick:
-                return choices[choice]
+                return choice
 
     def mate(self, krill1, krill2):
         return krill1, krill2
@@ -257,6 +263,9 @@ class DKHO:
     creator.create("Fitness", base.Fitness, weights=(-1.0,))
     creator.create("Particle", list, fitness=creator.Fitness, best=None)
     creator.create("Swarm", list, gbest=None, gbestfit=creator.Fitness)
+
+    def get_hof(self):
+        return self.hall_of_fame
 
 
 if __name__ == '__main__':
