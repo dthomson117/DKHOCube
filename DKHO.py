@@ -55,18 +55,9 @@ class DKHO:
                                                               hof,
                                                               verbose=True)
 
-        gen = logbook.select("gen")
-        avgs = logbook.select("avg")
-        stds = logbook.select("std")
-        avgs_value = [item[0] for item in avgs]
-        fig, ax = plt.subplots()
-        line = ax.plot(gen, avgs_value)
-        ax.set_xlabel("Generation")
-        ax.set_ylabel("Fitness (value)")
-        plt.show()
         hof.update(swarm)
+        self.logbook = logbook
         self.hall_of_fame = hof
-        print(self.hall_of_fame)
 
     def fitness(self, depth, krill):
         """
@@ -281,6 +272,9 @@ class DKHO:
 
     def get_hof(self):
         return self.hall_of_fame
+
+    def get_logbook(self):
+        return self.logbook
 
 
 if __name__ == '__main__':
