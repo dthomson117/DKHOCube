@@ -305,6 +305,8 @@ class Cube:
 
     def solve_kociemba(self):
         kociemba_string = self.to_kociemba_string()
+        if kociemba_string == 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB':
+            return ['']
         return kociemba.solve(kociemba_string).split()
 
     @staticmethod

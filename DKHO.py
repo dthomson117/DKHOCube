@@ -10,21 +10,20 @@ from deap import tools
 
 
 class DKHO:
-    NUM_KRILL = 100
-    SHUFFLE_AMOUNT = 15
-    NGEN = 100
-    LAMBDA = NGEN
-    CXPB = 0.5
-    MUTPB = 0.2
-    EVAL_DEPTH = 3
-    MIN_MUTATE = 1
-    MAX_MUTATE = 3
-    SELECTION_SIZE = 4
-    PARSIMONY_SIZE = 2
     hall_of_fame = []
 
-    def __init__(self, cube_to_solve):
+    def __init__(self, cube_to_solve, NUM_KRILL, NGEN, CXPB, MUTPB, EVAL_DEPTH, MIN_MUTATE, MAX_MUTATE, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA):
+        self.NUM_KRILL = NUM_KRILL
+        self.NGEN = NGEN
+        self.CXPB = CXPB
+        self.MUTPB = MUTPB
+        self.EVAL_DEPTH = EVAL_DEPTH
+        self.MIN_MUTATE = MIN_MUTATE
+        self.MAX_MUTATE = MAX_MUTATE
+        self.SELECTION_SIZE = SELECTION_SIZE
+        self.PARSIMONY_SIZE = PARSIMONY_SIZE
         self.shuffled_cube = cube_to_solve
+        self.LAMBDA = LAMBDA
         pool = multiprocessing.Pool()
 
         toolbox = base.Toolbox()
@@ -33,8 +32,9 @@ class DKHO:
         toolbox.register("particle", self.init_krill, creator.Particle)
         toolbox.register("swarm", tools.initRepeat, creator.Swarm, toolbox.particle)
 
-        toolbox.register("mate", self.mate)
-        toolbox.register("mutate", self.mutate, min_mutate=self.MIN_MUTATE, max_mutate=self.MAX_MUTATE, indpb=self.MUTPB)
+        toolbox.register("mate", self.safe_cxOnePoint)
+        toolbox.register("mutate", self.mutate, min_mutate=self.MIN_MUTATE, max_mutate=self.MAX_MUTATE,
+                         indpb=self.MUTPB)
         toolbox.register("select", tools.selDoubleTournament, fitness_size=self.SELECTION_SIZE,
                          parsimony_size=self.PARSIMONY_SIZE,
                          fitness_first=True, )
@@ -50,9 +50,10 @@ class DKHO:
         logbook = tools.Logbook()
         hof = tools.HallOfFame(10)
 
-        swarm, logbook = self.eaMuPlusLambdaWithMoveSelection(swarm, toolbox, self.NUM_KRILL, self.LAMBDA, self.CXPB, self.MUTPB, self.NGEN, stats,
-                                                         hof,
-                                                         verbose=True)
+        swarm, logbook = self.eaMuPlusLambdaWithMoveSelection(swarm, toolbox, self.NUM_KRILL, self.LAMBDA, self.CXPB,
+                                                              self.MUTPB, self.NGEN, stats,
+                                                              hof,
+                                                              verbose=True)
 
         gen = logbook.select("gen")
         avgs = logbook.select("avg")
@@ -63,7 +64,9 @@ class DKHO:
         ax.set_xlabel("Generation")
         ax.set_ylabel("Fitness (value)")
         plt.show()
+        hof.update(swarm)
         self.hall_of_fame = hof
+        print(self.hall_of_fame)
 
     def fitness(self, depth, krill):
         """
@@ -83,7 +86,7 @@ class DKHO:
             elif not solution:
                 solution = solve
         if solution == ['']:
-            return 0
+            return 0,
         else:
             return len(solution),
 
@@ -121,8 +124,9 @@ class DKHO:
             fitnesses = {}
 
             # Current state the krill is in is krill_cube
-            self.shuffled_cube.run_moves(krill)
             krill_cube = copy.deepcopy(self.shuffled_cube)
+            krill_cube.run_moves(krill)
+
 
             for move in cube.Cube.move_map.keys():
                 # We will clone this cube and assess each possible move on it
@@ -145,7 +149,7 @@ class DKHO:
             # Otherwise we will randomly choose a move based on its fitness
             else:
                 # We also give the option for the krill to not move
-                fitnesses[''] = krill.fitness.values[0]
+                fitnesses[''] = threshold.values[0]
                 chosen_move = self.weighted_random_choice(fitnesses)
 
             krill.append(chosen_move)
@@ -153,6 +157,13 @@ class DKHO:
                 krill.remove('')
             except ValueError:
                 return
+
+    def safe_cxOnePoint(self, krill1, krill2):
+        if len(krill1) <=1 or len(krill2) <= 1:
+            return krill1, krill2
+        else:
+            return tools.cxOnePoint(krill1,krill2)
+
 
     def weighted_random_choice(self, choices):
         max = sum(choices[choice] for choice in choices)
@@ -162,9 +173,6 @@ class DKHO:
             current += choices[choice]
             if current > pick:
                 return choice
-
-    def mate(self, krill1, krill2):
-        return krill1, krill2
 
     def init_krill(self, krill):
         krill = creator.Particle()
@@ -217,6 +225,9 @@ class DKHO:
         logbook = tools.Logbook()
         logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
 
+        count_gen = 0
+        solution_found = False
+
         # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in population if not ind.fitness.valid]
         fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
@@ -232,7 +243,9 @@ class DKHO:
             print(logbook.stream)
 
         # Begin the generational process
-        for gen in range(1, ngen + 1):
+        #for gen in range(1, ngen + 1):
+        while count_gen < ngen and not solution_found:
+            count_gen += 1
             # Let each krill make a move
             self.move_selection(population)
 
@@ -244,17 +257,19 @@ class DKHO:
             fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
+                if ind.fitness.values[0] == 0:
+                    solution_found = True
 
             # Update the hall of fame with the generated individuals
             if halloffame is not None:
                 halloffame.update(offspring)
 
             # Select the next generation population
-            population[:] = toolbox.select(population + offspring, mu)
+            population[:] = toolbox.select(offspring, mu)
 
             # Update the statistics with the new population
             record = stats.compile(population) if stats is not None else {}
-            logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+            logbook.record(gen=count_gen, nevals=len(invalid_ind), **record)
             if verbose:
                 print(logbook.stream)
 
