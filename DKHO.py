@@ -11,6 +11,9 @@ from deap import tools
 
 class DKHO:
     hall_of_fame = []
+    creator.create("Fitness", base.Fitness, weights=(-1.0,))
+    creator.create("Particle", list, fitness=creator.Fitness, best=None)
+    creator.create("Swarm", list, gbest=None, gbestfit=creator.Fitness)
 
     def __init__(self, cube_to_solve, NUM_KRILL, NGEN, CXPB, MUTPB, EVAL_DEPTH, MIN_MUTATE, MAX_MUTATE, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA):
         self.NUM_KRILL = NUM_KRILL
@@ -28,10 +31,8 @@ class DKHO:
 
         toolbox = base.Toolbox()
         toolbox.register("map", pool.map)
-        # toolbox.register("attr_item", cube.random_moves, 1)
         toolbox.register("particle", self.init_krill, creator.Particle)
         toolbox.register("swarm", tools.initRepeat, creator.Swarm, toolbox.particle)
-
         toolbox.register("mate", self.safe_cxOnePoint)
         toolbox.register("mutate", self.mutate, min_mutate=self.MIN_MUTATE, max_mutate=self.MAX_MUTATE,
                          indpb=self.MUTPB)
@@ -76,6 +77,12 @@ class DKHO:
                 solution = solve
             elif not solution:
                 solution = solve
+
+        if not krill.best:
+           krill.best = krill
+        elif krill.fitness.values[0] < krill.best.fitness.values[0]:
+            krill.best = krill
+
         if solution == ['']:
             return 0,
         else:
@@ -248,6 +255,10 @@ class DKHO:
             fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
+                if not population.gbest:
+                    population.gbest = ind
+                elif ind.fitness.values[0] < population.gbest.fitness.values[0]:
+                    population.gbest = ind
                 if ind.fitness.values[0] == 0:
                     solution_found = True
 
@@ -265,10 +276,6 @@ class DKHO:
                 print(logbook.stream)
 
         return population, logbook
-
-    creator.create("Fitness", base.Fitness, weights=(-1.0,))
-    creator.create("Particle", list, fitness=creator.Fitness, best=None)
-    creator.create("Swarm", list, gbest=None, gbestfit=creator.Fitness)
 
     def get_hof(self):
         return self.hall_of_fame
