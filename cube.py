@@ -32,8 +32,6 @@ class Cube:
             |***********|
     """
 
-    # White, Green, Red, Blue, Orange, Yellow
-
     # colours = ['w', 'o', 'g', 'r', 'b', 'y']
 
     colours = ['U', 'L', 'F', 'R', 'B', 'D']
@@ -176,7 +174,6 @@ class Cube:
 
         copy_cube = copy.copy(self.cube)
 
-        # U -> R -> D -> L -> U
         self.cube[0][2], self.cube[3][:, 0], self.cube[5][0], self.cube[1][:, 2] = \
             np.flip(copy_cube[1][:, 2]), copy_cube[0][2], np.flip(copy_cube[3][:, 0]), copy_cube[5][0]
 

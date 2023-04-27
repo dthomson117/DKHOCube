@@ -13,7 +13,7 @@ class DKHO:
     hall_of_fame = []
     creator.create("Fitness", base.Fitness, weights=(-1.0,))
     creator.create("Particle", list, fitness=creator.Fitness, best=None)
-    creator.create("Swarm", list, gbest=None, gbestfit=creator.Fitness)
+    creator.create("Swarm", list)
 
     def __init__(self, cube_to_solve, NUM_KRILL, NGEN, CXPB, MUTPB, EVAL_DEPTH, MIN_MUTATE, MAX_MUTATE, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA):
         self.NUM_KRILL = NUM_KRILL
@@ -27,6 +27,8 @@ class DKHO:
         self.PARSIMONY_SIZE = PARSIMONY_SIZE
         self.shuffled_cube = cube_to_solve
         self.LAMBDA = LAMBDA
+        self.gbest = 1000
+        self.THRESHOLD_LIMIT = 1.2
         pool = multiprocessing.Pool()
 
         toolbox = base.Toolbox()
@@ -38,21 +40,23 @@ class DKHO:
                          indpb=self.MUTPB)
         toolbox.register("select", tools.selDoubleTournament, fitness_size=self.SELECTION_SIZE,
                          parsimony_size=self.PARSIMONY_SIZE,
-                         fitness_first=True, )
+                         fitness_first=True)
         toolbox.register("evaluate", self.fitness, self.EVAL_DEPTH)
 
         swarm = toolbox.swarm(n=self.NUM_KRILL)
 
-        stats = tools.Statistics(lambda ind: ind.fitness.values)
-        stats.register("avg", numpy.mean, axis=0)
-        stats.register("std", numpy.std, axis=0)
-        stats.register("min", numpy.min, axis=0)
-        stats.register("max", numpy.max, axis=0)
+        stats_fit = tools.Statistics(lambda ind: ind.fitness.values[0])
+        stats_size = tools.Statistics(len)
+        mstats = tools.MultiStatistics(fitness=stats_fit, size=stats_size)
+        mstats.register("avg", numpy.mean, axis=0)
+        mstats.register("std", numpy.std, axis=0)
+        mstats.register("min", numpy.min, axis=0)
+        mstats.register("max", numpy.max, axis=0)
         logbook = tools.Logbook()
         hof = tools.HallOfFame(10)
 
         swarm, logbook = self.eaMuPlusLambdaWithMoveSelection(swarm, toolbox, self.NUM_KRILL, self.LAMBDA, self.CXPB,
-                                                              self.MUTPB, self.NGEN, stats,
+                                                              self.MUTPB, self.NGEN, mstats,
                                                               hof,
                                                               verbose=True)
 
@@ -78,11 +82,6 @@ class DKHO:
             elif not solution:
                 solution = solve
 
-        if not krill.best:
-           krill.best = krill
-        elif krill.fitness.values[0] < krill.best.fitness.values[0]:
-            krill.best = krill
-
         if solution == ['']:
             return 0,
         else:
@@ -98,7 +97,9 @@ class DKHO:
         :param indpb: Probability of a Krill being mutated
         :return: The (possibly) mutated krill
         """
-        if indpb > random.random():
+        threshold = self.gbest * self.THRESHOLD_LIMIT
+
+        if indpb >= random.random() and krill.fitness.values[0] >= threshold:
             if len(krill) == 0:
                 return krill,
             elif len(krill) == 1:
@@ -117,44 +118,54 @@ class DKHO:
         return krill,
 
     def move_selection(self, swarm):
-        for krill in swarm:
-            threshold = krill.fitness
+        threshold = self.gbest * self.THRESHOLD_LIMIT
+        population = []
+        for indv in swarm:
+            krill = copy.deepcopy(indv)
             fitnesses = {}
 
             # Current state the krill is in is krill_cube
             krill_cube = copy.deepcopy(self.shuffled_cube)
             krill_cube.run_moves(krill)
 
-
             for move in cube.Cube.move_map.keys():
                 # We will clone this cube and assess each possible move on it
                 temp_cube = copy.deepcopy(krill_cube)
                 temp_cube.run_moves([move])
-                fitnesses[move] = len(temp_cube.solve_kociemba())
+                solution = temp_cube.solve_kociemba()
+                if solution == ['']: solution = []
+                fitnesses[move] = len(solution)
 
             # We now have a dictionary of the fitnesses of each move
 
-            # We will get the best move(s)
+            # We will get the value of the best move(s)
             minval = min(fitnesses.values())
             best_moves = list(filter(lambda x: fitnesses[x] == minval, fitnesses))
 
             # If the best move(s) have a fitness below the threshold, we will choose it (or a random one if multiple)
-            if minval < threshold.values[0]:
-                if len(best_moves) > 1:
-                    chosen_move = random.choice(best_moves)
-                else:
-                    chosen_move = best_moves[0]
+            if minval < threshold:
+                chosen_move = random.choice(best_moves)
+                #print("random best move chosen: " + chosen_move)
             # Otherwise we will randomly choose a move based on its fitness
             else:
                 # We also give the option for the krill to not move
-                fitnesses[''] = threshold.values[0]
+                # fitnesses[''] = krill.fitness.values[0]
                 chosen_move = self.weighted_random_choice(fitnesses)
+                #print("random move chosen: " + chosen_move)
 
             krill.append(chosen_move)
+            del krill.fitness.values
+
             try:
                 krill.remove('')
+                population.append(krill)
             except ValueError:
-                return
+                population.append(krill)
+                continue
+
+
+
+        return population
 
     def safe_cxOnePoint(self, krill1, krill2):
         if len(krill1) <=1 or len(krill2) <= 1:
@@ -164,16 +175,13 @@ class DKHO:
 
 
     def weighted_random_choice(self, choices):
-        max = sum(choices[choice] for choice in choices)
-        pick = random.uniform(0, max)
-        current = 0
-        for choice in choices:
-            current += choices[choice]
-            if current > pick:
-                return choice
+        keys, values = choices.keys(), choices.values()
+        weights = [1/(w + 0.00001) for w in values]
+        return random.choices(list(choices.keys()), weights=weights, k=1)[0]
 
     def init_krill(self, krill):
         krill = creator.Particle()
+        krill.extend(self.shuffled_cube.random_moves(random.randint(0, 2)))
         return krill
 
     # This is taken from the DEAP GitHub, I've replicated it here so I can modify it to have move selection for the krill
@@ -188,6 +196,7 @@ class DKHO:
         :param cxpb: The probability that an offspring is produced by crossover.
         :param mutpb: The probability that an offspring is produced by mutation.
         :param ngen: The number of generation.
+        :param mut_and_cross: To use both mutation and crossover, or one or the other.
         :param stats: A :class:`~deap.tools.Statistics` object that is updated
                       inplace, optional.
         :param halloffame: A :class:`~deap.tools.HallOfFame` object that will
@@ -203,11 +212,11 @@ class DKHO:
         each generation and the statistics if a :class:`~deap.tools.Statistics` is
         given as argument. The *cxpb* and *mutpb* arguments are passed to the
         :func:`varOr` function. The pseudocode goes as follow ::
-            evaluate(population)
-            for g in range(ngen):
-                offspring = varOr(population, toolbox, lambda_, cxpb, mutpb)
-                evaluate(offspring)
-                population = select(population + offspring, mu)
+        evaluate(population)
+        for g in range(ngen):
+            offspring = varOr(population, toolbox, lambda_, cxpb, mutpb)
+            evaluate(offspring)
+            population = select(population + offspring, mu)
         First, the individuals having an invalid fitness are evaluated. Second,
         the evolutionary loop begins by producing *lambda_* offspring from the
         population, the offspring are generated by the :func:`varOr` function. The
@@ -244,30 +253,45 @@ class DKHO:
         #for gen in range(1, ngen + 1):
         while count_gen < ngen and not solution_found:
             count_gen += 1
+
             # Let each krill make a move
-            self.move_selection(population)
+            population = self.move_selection(population)
+
+            # Evaluate the population after making a move to re-assess their fitness
+            invalid_ind = [ind for ind in population if not ind.fitness.values]
+            fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+            for ind, fit in zip(invalid_ind, fitnesses):
+                ind.fitness.values = fit
+                if ind.fitness.values[0] < self.gbest:
+                    self.gbest = ind.fitness.values[0]
+                if ind.fitness.values[0] == 0 and len(ind) <= 24:
+                    temp_cube = copy.deepcopy(self.shuffled_cube)
+                    temp_cube.run_moves(ind)
+                    if temp_cube.is_solved():
+                        solution_found = True
 
             # Vary the population
             offspring = algorithms.varOr(population, toolbox, lambda_, cxpb, mutpb)
 
             # Evaluate the individuals with an invalid fitness
-            invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+            invalid_ind = [ind for ind in offspring if not ind.fitness.values]
             fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
-                if not population.gbest:
-                    population.gbest = ind
-                elif ind.fitness.values[0] < population.gbest.fitness.values[0]:
-                    population.gbest = ind
-                if ind.fitness.values[0] == 0:
-                    solution_found = True
+                if ind.fitness.values[0] < self.gbest:
+                    self.gbest = ind.fitness.values[0]
+                if ind.fitness.values[0] == 0 and len(ind) <= 24:
+                    temp_cube = copy.deepcopy(self.shuffled_cube)
+                    temp_cube.run_moves(ind)
+                    if temp_cube.is_solved():
+                        solution_found = True
 
             # Update the hall of fame with the generated individuals
             if halloffame is not None:
-                halloffame.update(offspring)
+                halloffame.update(offspring + population)
 
             # Select the next generation population
-            population[:] = toolbox.select(offspring, mu)
+            population[:] = toolbox.select(offspring + population, mu)
 
             # Update the statistics with the new population
             record = stats.compile(population) if stats is not None else {}

@@ -5,25 +5,23 @@ import visualise
 import time
 import DKHO
 
-NUM_KRILL = 2000
-MAX_GENERATIONS = 250
-CXPB = 0.2
-MUTPB = 0.7
+NUM_KRILL = 2
+MAX_GENERATIONS = 150
+CXPB = 0.1
+MUTPB = 0.9
 EVAL_DEPTH = 1
 MIN_MUTATE = 1
-MAX_MUTATE = 5
-SELECTION_SIZE = 10
-PARSIMONY_SIZE = 1.3
-LAMBDA = 2000
+MAX_MUTATE = 3
+SELECTION_SIZE = 5
+PARSIMONY_SIZE = 1.8
+LAMBDA = 2
 
 if __name__ == "__main__":
     average_amount = 5
     cubes = {}
-    #for shuffle_amount in range(1, 20):
-        #for i in range(average_amount):
     start_time = time.time()
     cube_to_solve = cube.Cube(3)
-    shuffle_moves = cube_to_solve.random_moves(21)
+    shuffle_moves = cube_to_solve.random_moves(50)
     cube_to_solve.run_moves(shuffle_moves)
 
     dkho = DKHO.DKHO(cube_to_solve, NUM_KRILL, MAX_GENERATIONS, CXPB, MUTPB, EVAL_DEPTH, MIN_MUTATE, MAX_MUTATE, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA)
