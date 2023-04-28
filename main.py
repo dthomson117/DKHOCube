@@ -9,9 +9,8 @@ NUM_KRILL = 50
 MAX_GENERATIONS = 150
 CXPB = 0.3
 MUTPB = 0.6
+INDPB = 0.5
 EVAL_DEPTH = 1
-MIN_MUTATE = 1
-MAX_MUTATE = 3
 SELECTION_SIZE = 3
 
 
@@ -26,7 +25,7 @@ if __name__ == "__main__":
     shuffle_moves = cube_to_solve.random_moves(50)
     cube_to_solve.run_moves(shuffle_moves)
 
-    dkho = DKHO.DKHO(cube_to_solve, NUM_KRILL, MAX_GENERATIONS, CXPB, MUTPB, EVAL_DEPTH, MIN_MUTATE, MAX_MUTATE, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA)
+    dkho = DKHO.DKHO(cube_to_solve, NUM_KRILL, MAX_GENERATIONS, CXPB, MUTPB, INDPB, EVAL_DEPTH, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA)
     hof = dkho.get_hof()
     solve_moves = []
 
@@ -56,3 +55,6 @@ def plot_logbook(logbook):
     ax.set_xlabel("Generation")
     ax.set_ylabel("Fitness (value)")
     plt.show()
+
+def test_parameters():
+    return

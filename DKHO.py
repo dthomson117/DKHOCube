@@ -15,14 +15,13 @@ class DKHO:
     creator.create("Particle", list, fitness=creator.Fitness, best=None)
     creator.create("Swarm", list)
 
-    def __init__(self, cube_to_solve, NUM_KRILL, NGEN, CXPB, MUTPB, EVAL_DEPTH, MIN_MUTATE, MAX_MUTATE, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA):
+    def __init__(self, cube_to_solve, NUM_KRILL, NGEN, CXPB, MUTPB, INDPB, EVAL_DEPTH, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA):
         self.NUM_KRILL = NUM_KRILL
         self.NGEN = NGEN
         self.CXPB = CXPB
         self.MUTPB = MUTPB
+        self.INDPB = INDPB
         self.EVAL_DEPTH = EVAL_DEPTH
-        self.MIN_MUTATE = MIN_MUTATE
-        self.MAX_MUTATE = MAX_MUTATE
         self.SELECTION_SIZE = SELECTION_SIZE
         self.PARSIMONY_SIZE = PARSIMONY_SIZE
         self.shuffled_cube = cube_to_solve
@@ -35,8 +34,7 @@ class DKHO:
         toolbox.register("particle", self.init_krill, creator.Particle)
         toolbox.register("swarm", tools.initRepeat, creator.Swarm, toolbox.particle)
         toolbox.register("mate", self.safe_cxOnePoint)
-        toolbox.register("mutate", self.mutate, min_mutate=self.MIN_MUTATE, max_mutate=self.MAX_MUTATE,
-                         indpb=self.MUTPB)
+        toolbox.register("mutate", self.mutate, indpb=self.INDPB)
         toolbox.register("select", tools.selDoubleTournament, fitness_size=self.SELECTION_SIZE,
                          parsimony_size=self.PARSIMONY_SIZE,
                          fitness_first=True)
@@ -86,33 +84,17 @@ class DKHO:
         else:
             return len(solution),
 
-    def mutate(self, krill, min_mutate=0, max_mutate=0, indpb=0.0):
+    def mutate(self, krill, indpb=0.0):
         """
-        To mutate the krill, we randomly change some of its moves. The number of moves changed are between min_mutate and
-        max_mutate. indpb is the probability of a krill being mutated
+        To mutate the krill, we randomly change some of its moves. indpb is the probability of a move being mutated
         :param krill: Krill individual to be possibly mutated
-        :param min_mutate: Minimum number of mutations
-        :param max_mutate: Maximum number of mutations
         :param indpb: Probability of a Krill being mutated
-        :return: The (possibly) mutated krill
+        :return: The mutated krill
         """
 
-        if indpb >= random.random():
-            if len(krill) == 0:
-                return krill,
-            elif len(krill) == 1:
-                mutates = [0]
-            elif len(krill) < max_mutate:
-                mutates = random.sample(range(0, len(krill)), k=random.randint(min_mutate, len(krill)))
-            else:
-                try:
-                    mutates = random.sample(range(0, len(krill)), k=random.randint(min_mutate, max_mutate))
-                except ValueError:
-                    print("Somethings gone wrong with mutation!")
-                    raise ValueError
-
-            for index in mutates:
-                krill[index] = self.shuffled_cube.random_moves(1)[0]
+        for i, move in enumerate(krill):
+            if random.random() < indpb:
+                krill[i] = self.shuffled_cube.random_moves(1)[0]
         return krill,
 
     def move_selection(self, swarm):
