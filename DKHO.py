@@ -39,6 +39,7 @@ class DKHO:
                          parsimony_size=self.PARSIMONY_SIZE,
                          fitness_first=True)
         toolbox.register("evaluate", self.fitness, self.EVAL_DEPTH)
+        toolbox.register("move", self.move_selection)
 
         swarm = toolbox.swarm(n=self.NUM_KRILL)
 
@@ -97,56 +98,52 @@ class DKHO:
                 krill[i] = self.shuffled_cube.random_moves(1)[0]
         return krill,
 
-    def move_selection(self, swarm):
+    def move_selection(self, indv):
         threshold = self.gbest - 1 # Set the threshold to be better than the current global best
-        population = []
-        for indv in swarm:
-            krill = copy.deepcopy(indv) # We clone the krill to prevent issues with pointers
-            fitnesses = {}
+        krill = copy.deepcopy(indv) # We clone the krill to prevent issues with pointers
+        fitnesses = {}
 
-            # Current state the krill is in is krill_cube
-            krill_cube = copy.deepcopy(self.shuffled_cube)
-            krill_cube.run_moves(krill)
+        # Current state the krill is in is krill_cube
+        krill_cube = copy.deepcopy(self.shuffled_cube)
+        krill_cube.run_moves(krill)
 
-            for move in cube.Cube.move_map.keys():
-                # We will clone this cube and assess each possible move on it
-                temp_cube = copy.deepcopy(krill_cube)
-                temp_cube.run_moves([move])
-                solution = temp_cube.solve_kociemba()
-                if solution == ['']: solution = [] # Set the solution to length 0 rather than length 1 if solved
-                fitnesses[move] = len(solution)
+        for move in cube.Cube.move_map.keys():
+            # We will clone this cube and assess each possible move on it
+            temp_cube = copy.deepcopy(krill_cube)
+            temp_cube.run_moves([move])
+            solution = temp_cube.solve_kociemba()
+            if solution == ['']: solution = [] # Set the solution to length 0 rather than length 1 if solved
+            fitnesses[move] = len(solution)
 
-            # We also allow the krill to not move
-            solution = krill_cube.solve_kociemba()
-            if solution == ['']: solution = []  # Set the solution to length 0 rather than length 1 if solved
-            fitnesses[''] = len(solution)
+        # We also allow the krill to not move
+        solution = krill_cube.solve_kociemba()
+        if solution == ['']: solution = []  # Set the solution to length 0 rather than length 1 if solved
+        fitnesses[''] = len(solution)
 
-            # We now have a dictionary of the fitnesses of each move
+        # We now have a dictionary of the fitnesses of each move
 
-            # We will get the value of the best move(s)
-            minval = min(fitnesses.values())
-            best_moves = list(filter(lambda x: fitnesses[x] == minval, fitnesses))
+        # We will get the value of the best move(s)
+        minval = min(fitnesses.values())
+        best_moves = list(filter(lambda x: fitnesses[x] == minval, fitnesses))
 
-            # If the best move(s) have a fitness below the threshold, we will choose it (or a random one if multiple)
-            if minval <= threshold:
-                chosen_move = random.choice(best_moves)
-                #print("random best move chosen: " + chosen_move)
-            # Otherwise we will randomly choose a move based on its fitness
-            else:
-                # We also give the option for the krill to not move
-                chosen_move = self.weighted_random_choice(fitnesses)
-                #print("random move chosen: " + chosen_move)
+        # If the best move(s) have a fitness below the threshold, we will choose it (or a random one if multiple)
+        if minval <= threshold:
+            chosen_move = random.choice(best_moves)
+            #print("random best move chosen: " + chosen_move)
+        # Otherwise we will randomly choose a move based on its fitness
+        else:
+            # We also give the option for the krill to not move
+            chosen_move = self.weighted_random_choice(fitnesses)
+            #print("random move chosen: " + chosen_move)
 
-            # The krill will append the chosen move, and the fitness of that move will be assigned to the krill to prevent needless extra evaluations
-            krill.append(chosen_move)
-            krill.fitness.values = fitnesses[chosen_move],
+        # The krill will append the chosen move, and the fitness of that move will be assigned to the krill to prevent needless extra evaluations
+        krill.append(chosen_move)
+        krill.fitness.values = fitnesses[chosen_move],
 
-            if '' in krill:
-                krill.remove('') # As no move is made we remove it from the Krill so the length is appropriate
+        if '' in krill:
+            krill.remove('') # As no move is made we remove it from the Krill so the length is appropriate
 
-            population.append(krill)
-
-        return population
+        return krill
 
     def safe_cxOnePoint(self, krill1, krill2):
         if len(krill1) <=1 or len(krill2) <= 1:
@@ -236,7 +233,7 @@ class DKHO:
             count_gen += 1
 
             # Let each krill make a move
-            population = self.move_selection(population)
+            population = toolbox.map(toolbox.move, population)
 
             # Vary the population
             offspring = algorithms.varOr(population, toolbox, lambda_, cxpb, mutpb)
