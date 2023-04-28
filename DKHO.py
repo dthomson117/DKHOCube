@@ -97,9 +97,8 @@ class DKHO:
         :param indpb: Probability of a Krill being mutated
         :return: The (possibly) mutated krill
         """
-        threshold = self.gbest * self.THRESHOLD_LIMIT
 
-        if indpb >= random.random() and krill.fitness.values[0] >= threshold:
+        if indpb >= random.random():
             if len(krill) == 0:
                 return krill,
             elif len(krill) == 1:
@@ -149,21 +148,14 @@ class DKHO:
             # Otherwise we will randomly choose a move based on its fitness
             else:
                 # We also give the option for the krill to not move
-                # fitnesses[''] = krill.fitness.values[0]
                 chosen_move = self.weighted_random_choice(fitnesses)
                 #print("random move chosen: " + chosen_move)
 
+            # The krill will append the chosen move, and the fitness of that move will be assigned to the krill to prevent needless extra evaluations
             krill.append(chosen_move)
-            del krill.fitness.values
+            krill.fitness.values = fitnesses[chosen_move],
 
-            try:
-                krill.remove('')
-                population.append(krill)
-            except ValueError:
-                population.append(krill)
-                continue
-
-
+            population.append(krill)
 
         return population
 
@@ -256,19 +248,6 @@ class DKHO:
 
             # Let each krill make a move
             population = self.move_selection(population)
-
-            # Evaluate the population after making a move to re-assess their fitness
-            invalid_ind = [ind for ind in population if not ind.fitness.values]
-            fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
-            for ind, fit in zip(invalid_ind, fitnesses):
-                ind.fitness.values = fit
-                if ind.fitness.values[0] < self.gbest:
-                    self.gbest = ind.fitness.values[0]
-                if ind.fitness.values[0] == 0 and len(ind) <= 24:
-                    temp_cube = copy.deepcopy(self.shuffled_cube)
-                    temp_cube.run_moves(ind)
-                    if temp_cube.is_solved():
-                        solution_found = True
 
             # Vary the population
             offspring = algorithms.varOr(population, toolbox, lambda_, cxpb, mutpb)

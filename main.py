@@ -5,16 +5,18 @@ import visualise
 import time
 import DKHO
 
-NUM_KRILL = 2
+NUM_KRILL = 50
 MAX_GENERATIONS = 150
-CXPB = 0.1
-MUTPB = 0.9
+CXPB = 0.3
+MUTPB = 0.6
 EVAL_DEPTH = 1
 MIN_MUTATE = 1
 MAX_MUTATE = 3
-SELECTION_SIZE = 5
-PARSIMONY_SIZE = 1.8
-LAMBDA = 2
+SELECTION_SIZE = 3
+
+
+PARSIMONY_SIZE = 1.5
+LAMBDA = 50
 
 if __name__ == "__main__":
     average_amount = 5
