@@ -5,17 +5,18 @@ import visualise
 import time
 import DKHO
 
-NUM_KRILL = 50
+EVAL_DEPTH = 1
 MAX_GENERATIONS = 150
+
+NUM_KRILL = 100
+LAMBDA = 100
+
 CXPB = 0.3
 MUTPB = 0.6
 INDPB = 0.5
-EVAL_DEPTH = 1
+
 SELECTION_SIZE = 3
-
-
 PARSIMONY_SIZE = 1.5
-LAMBDA = 50
 
 if __name__ == "__main__":
     average_amount = 5
@@ -25,7 +26,8 @@ if __name__ == "__main__":
     shuffle_moves = cube_to_solve.random_moves(50)
     cube_to_solve.run_moves(shuffle_moves)
 
-    dkho = DKHO.DKHO(cube_to_solve, NUM_KRILL, MAX_GENERATIONS, CXPB, MUTPB, INDPB, EVAL_DEPTH, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA)
+    dkho = DKHO.DKHO(cube_to_solve, NUM_KRILL, MAX_GENERATIONS, CXPB, MUTPB, INDPB, EVAL_DEPTH, SELECTION_SIZE,
+                     PARSIMONY_SIZE, LAMBDA)
     hof = dkho.get_hof()
     solve_moves = []
 
@@ -42,8 +44,6 @@ if __name__ == "__main__":
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    visualise.show_moves(shuffle_moves=shuffle_moves, solve_moves=solve_moves)
-
 
 def plot_logbook(logbook):
     gen = logbook.select("gen")
@@ -56,5 +56,18 @@ def plot_logbook(logbook):
     ax.set_ylabel("Fitness (value)")
     plt.show()
 
+
 def test_parameters():
-    return
+    combinations = [(round(x / 10, 2), round(1 - x / 10, 2)) for x in range(0, 11)]
+    results = {}
+
+    for mutpb, crosspb in combinations:
+        dkho = DKHO.DKHO(cube_to_solve, NUM_KRILL, MAX_GENERATIONS, crosspb, mutpb, INDPB, EVAL_DEPTH, SELECTION_SIZE,
+                         PARSIMONY_SIZE, LAMBDA)
+        results[(mutpb, crosspb)] = {dkho.get_logbook()}
+
+    print(results)
+    return results
+
+
+test_parameters()

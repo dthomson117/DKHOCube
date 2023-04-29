@@ -1,12 +1,13 @@
 import copy
-import numpy
 import multiprocessing
-import matplotlib.pyplot as plt
-import cube
 import random
+
+import numpy
 from deap import base, algorithms
 from deap import creator
 from deap import tools
+
+import cube
 
 
 class DKHO:
@@ -15,7 +16,9 @@ class DKHO:
     creator.create("Particle", list, fitness=creator.Fitness, best=None)
     creator.create("Swarm", list)
 
-    def __init__(self, cube_to_solve, NUM_KRILL, NGEN, CXPB, MUTPB, INDPB, EVAL_DEPTH, SELECTION_SIZE, PARSIMONY_SIZE, LAMBDA):
+    def __init__(self, cube_to_solve, NUM_KRILL, NGEN, CXPB, MUTPB, INDPB, EVAL_DEPTH, SELECTION_SIZE, PARSIMONY_SIZE,
+                 LAMBDA):
+        # Setting hyperparameters
         self.NUM_KRILL = NUM_KRILL
         self.NGEN = NGEN
         self.CXPB = CXPB
@@ -26,10 +29,13 @@ class DKHO:
         self.PARSIMONY_SIZE = PARSIMONY_SIZE
         self.shuffled_cube = cube_to_solve
         self.LAMBDA = LAMBDA
-        self.gbest = 1000
-        pool = multiprocessing.Pool()
+        self.gbest = 1000  # We set gbest to be high initially
 
+        # Creation of toolbox and pool
+        pool = multiprocessing.Pool()
         toolbox = base.Toolbox()
+
+        # Registering toolbox functions
         toolbox.register("map", pool.map)
         toolbox.register("particle", self.init_krill, creator.Particle)
         toolbox.register("swarm", tools.initRepeat, creator.Swarm, toolbox.particle)
@@ -41,8 +47,10 @@ class DKHO:
         toolbox.register("evaluate", self.fitness, self.EVAL_DEPTH)
         toolbox.register("move", self.move_selection)
 
+        # Create initial population
         swarm = toolbox.swarm(n=self.NUM_KRILL)
 
+        # Creation of stats to record each generation
         stats_fit = tools.Statistics(lambda ind: ind.fitness.values[0])
         stats_size = tools.Statistics(len)
         mstats = tools.MultiStatistics(fitness=stats_fit, size=stats_size)
@@ -99,8 +107,8 @@ class DKHO:
         return krill,
 
     def move_selection(self, indv):
-        threshold = self.gbest - 1 # Set the threshold to be better than the current global best
-        krill = copy.deepcopy(indv) # We clone the krill to prevent issues with pointers
+        threshold = self.gbest  # Set the threshold to be the current global best
+        krill = copy.deepcopy(indv)  # We clone the krill to prevent issues with pointers
         fitnesses = {}
 
         # Current state the krill is in is krill_cube
@@ -112,7 +120,7 @@ class DKHO:
             temp_cube = copy.deepcopy(krill_cube)
             temp_cube.run_moves([move])
             solution = temp_cube.solve_kociemba()
-            if solution == ['']: solution = [] # Set the solution to length 0 rather than length 1 if solved
+            if solution == ['']: solution = []  # Set the solution to length 0 rather than length 1 if solved
             fitnesses[move] = len(solution)
 
         # We also allow the krill to not move
@@ -129,32 +137,32 @@ class DKHO:
         # If the best move(s) have a fitness below the threshold, we will choose it (or a random one if multiple)
         if minval <= threshold:
             chosen_move = random.choice(best_moves)
-            #print("random best move chosen: " + chosen_move)
+            # print("random best move chosen: " + chosen_move)
         # Otherwise we will randomly choose a move based on its fitness
         else:
             # We also give the option for the krill to not move
             chosen_move = self.weighted_random_choice(fitnesses)
-            #print("random move chosen: " + chosen_move)
+            # print("random move chosen: " + chosen_move)
 
         # The krill will append the chosen move, and the fitness of that move will be assigned to the krill to prevent needless extra evaluations
         krill.append(chosen_move)
         krill.fitness.values = fitnesses[chosen_move],
 
         if '' in krill:
-            krill.remove('') # As no move is made we remove it from the Krill so the length is appropriate
+            krill.remove('')  # As no move is made we remove it from the Krill so the length is appropriate
 
         return krill
 
     def safe_cxOnePoint(self, krill1, krill2):
-        if len(krill1) <=1 or len(krill2) <= 1:
+        if len(krill1) <= 1 or len(krill2) <= 1:
             return krill1, krill2
         else:
-            return tools.cxOnePoint(krill1,krill2)
-
+            return tools.cxOnePoint(krill1, krill2)
 
     def weighted_random_choice(self, choices):
         keys, values = choices.keys(), choices.values()
-        weights = [1/(w + 0.00001) for w in values] # We will increase the weight ever so slightly, to avoid division by 0 errors
+        weights = [1 / (w + 0.00001) for w in
+                   values]  # We will increase the weight ever so slightly, to avoid division by 0 errors
         return random.choices(list(choices.keys()), weights=weights, k=1)[0]
 
     def init_krill(self, krill):
@@ -228,7 +236,7 @@ class DKHO:
             print(logbook.stream)
 
         # Begin the generational process
-        #for gen in range(1, ngen + 1):
+        # for gen in range(1, ngen + 1):
         while count_gen < ngen and not solution_found:
             count_gen += 1
 
