@@ -64,7 +64,7 @@ class DKHO:
         swarm, logbook = self.eaMuPlusLambdaWithMoveSelection(swarm, toolbox, self.NUM_KRILL, self.LAMBDA, self.CXPB,
                                                               self.MUTPB, self.NGEN, mstats,
                                                               hof,
-                                                              verbose=True)
+                                                              verbose=False)
 
         hof.update(swarm)
         self.logbook = logbook
@@ -135,7 +135,7 @@ class DKHO:
         best_moves = list(filter(lambda x: fitnesses[x] == minval, fitnesses))
 
         # If the best move(s) have a fitness below the threshold, we will choose it (or a random one if multiple)
-        if minval <= threshold:
+        if minval < threshold:
             chosen_move = random.choice(best_moves)
             # print("random best move chosen: " + chosen_move)
         # Otherwise we will randomly choose a move based on its fitness
@@ -150,6 +150,9 @@ class DKHO:
 
         if '' in krill:
             krill.remove('')  # As no move is made we remove it from the Krill so the length is appropriate
+
+        if self.gbest > fitnesses[chosen_move]:
+            self.gbest = fitnesses[chosen_move] # We set the new global best if a good move is found, this will help with variation
 
         return krill
 
@@ -226,6 +229,10 @@ class DKHO:
         fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit
+            if ind.fitness.values[0] < self.gbest:
+                self.gbest = ind.fitness.values[0]
+            if ind.fitness.values[0] == 0:
+                solution_found = True
 
         if halloffame is not None:
             halloffame.update(population)
@@ -253,11 +260,8 @@ class DKHO:
                 ind.fitness.values = fit
                 if ind.fitness.values[0] < self.gbest:
                     self.gbest = ind.fitness.values[0]
-                if ind.fitness.values[0] == 0 and len(ind) <= 24:
-                    temp_cube = copy.deepcopy(self.shuffled_cube)
-                    temp_cube.run_moves(ind)
-                    if temp_cube.is_solved():
-                        solution_found = True
+                if ind.fitness.values[0] == 0:
+                    solution_found = True
 
             # Update the hall of fame with the generated individuals
             if halloffame is not None:
@@ -283,6 +287,6 @@ class DKHO:
 
 if __name__ == '__main__':
     shuffled_cube = cube.Cube(3)
-    shuffle_moves = shuffled_cube.random_moves(5)
+    shuffle_moves = shuffled_cube.random_moves(50)
     shuffled_cube.run_moves(shuffle_moves)
     DKHO(shuffled_cube)
