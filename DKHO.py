@@ -64,7 +64,7 @@ class DKHO:
         swarm, logbook = self.eaMuPlusLambdaWithMoveSelection(swarm, toolbox, self.NUM_KRILL, self.LAMBDA, self.CXPB,
                                                               self.MUTPB, self.NGEN, mstats,
                                                               hof,
-                                                              verbose=False)
+                                                              verbose=True)
 
         hof.update(swarm)
         self.logbook = logbook
@@ -135,7 +135,7 @@ class DKHO:
         best_moves = list(filter(lambda x: fitnesses[x] == minval, fitnesses))
 
         # If the best move(s) have a fitness below the threshold, we will choose it (or a random one if multiple)
-        if minval < threshold:
+        if minval <= threshold:
             chosen_move = random.choice(best_moves)
             # print("random best move chosen: " + chosen_move)
         # Otherwise we will randomly choose a move based on its fitness

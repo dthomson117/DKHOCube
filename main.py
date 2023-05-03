@@ -11,6 +11,7 @@ import random
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import pickle
 from bayes_opt import BayesianOptimization
 from bayes_opt.logger import JSONLogger
 from bayes_opt.event import Events
@@ -53,14 +54,14 @@ def test_optimality(NUM_KRILL=100, CXPB=0, MUTPB=0, INDPB=0,
     LAMBDA = int(LAMBDA)
     for cube in cubes_to_solve:
         start_time = time.time()
-        dkho = DKHO.DKHO(cube, NUM_KRILL, 250, CXPB, MUTPB, INDPB, 1, SELECTION_SIZE,
+        dkho = DKHO.DKHO(cube[0], NUM_KRILL, 250, CXPB, MUTPB, INDPB, 1, SELECTION_SIZE,
                          PARSIMONY_SIZE, LAMBDA)
         finish_time = time.time() - start_time
         indv = dkho.get_hof()[0]
 
         results.append((indv, cube, finish_time))
 
-    loss = sum([get_optimality(ind, cube, time) for ind, cube, time in results])
+    loss = sum([get_optimality(ind, cube[0], time) for ind, cube, time in results])
 
     return loss
 
@@ -77,12 +78,14 @@ def get_optimality(indv, shuffled_cube, time_taken):
     return 1 / (score + (time_taken / 100))
 
 
-def create_test_cubes(n):
+def create_test_cubes(n, linear=False):
     cubes = []
     for i in range(n):
-        shuffle_cube = cube.Cube(3)
-        shuffle_amount = random.randint(0, 50)
-        shuffle_cube.run_moves(shuffle_cube.random_moves(shuffle_amount))
+        if linear:
+            shuffle_amount = i + 1
+        else:
+            shuffle_amount = random.randint(0, 25)
+        shuffle_cube = cube.Cube(3, shuffle_amount=shuffle_amount)
         cubes.append((shuffle_cube, shuffle_amount))
     return cubes
 
@@ -90,7 +93,7 @@ def create_test_cubes(n):
 def bayesian_opt():
     pbounds = {'CXPB': (0.1, 0.3), 'MUTPB': (0.1, 0.7), 'INDPB': (0.1, 1), 'PARSIMONY_SIZE': (1.1, 1.9),
                'SELECTION_SIZE': (2, 10), 'NUM_KRILL': (5, 250), 'LAMBDA': (5, 250)}
-    logger = JSONLogger(path="./logs.json")
+    logger = JSONLogger(path="./logs-run-2.json")
     bounds_transformer = SequentialDomainReductionTransformer(minimum_window=0.1)
     optimizer = BayesianOptimization(f=test_optimality, pbounds=pbounds, random_state=1, verbose=2,
                                      bounds_transformer=bounds_transformer)
@@ -212,9 +215,29 @@ def plot_kde():
     sns.boxplot(df1, whis=1000, width=0.5, saturation=.7)
     plt.show()
 
-def test_time():
 
+def test_time(best):
+    cubes_to_solve = []
+    results = []
 
+    for shuffled_cube in cubes_to_solve:
+        start_time = time.time()
+        dkho = DKHO.DKHO(shuffled_cube[0], int(best['NUM_KRILL']), 250, best['CXPB'], best['MUTPB'], best['INDPB'], 1, int(best['SELECTION_SIZE']), best['PARSIMONY_SIZE'], int(best['LAMBDA']))
+        end_time = time.time() - start_time
+
+        results.append((dkho.get_hof(), dkho.get_logbook(), end_time))
+
+    return results, cubes_to_solve
+
+def get_best_params():
+    iterations = read_json_bo()
+    highest_target = 0
+    for line in iterations:
+        if line['target'] > highest_target:
+            highest_target = line['target']
+            best = line
+
+    return best['params']
 
 def read_json_bo():
     iterations = []
@@ -228,14 +251,16 @@ def read_json_bo():
 
 
 if __name__ == "__main__":
-    # cubes_to_solve = create_test_cubes(25)
-    # best_args = bayesian_opt()
-    # print(best_args)
+    cubes_to_solve = create_test_cubes(25, linear=True)
+    best_args = bayesian_opt()
+    print(best_args)
 
-    # plot_optimizer()
+    plot_optimizer()
 
-    # plot_search_space_bo()
+    plot_search_space_bo()
 
-    #plot_kde()
+    # plot_kde()
+
+    #results = test_time(get_best_params())
 
 
