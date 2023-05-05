@@ -300,11 +300,11 @@ class Cube:
         self.cube[1][0], self.cube[2][0], self.cube[3][0], self.cube[4][0] = \
             copy_cube[4][0], copy_cube[1][0], copy_cube[2][0], copy_cube[3][0]
 
-    def solve_kociemba(self):
+    def solve_kociemba(self, max_depth=24):
         kociemba_string = self.to_kociemba_string()
         if kociemba_string == 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB':
             return ['']
-        return kociemba.solve(kociemba_string).split()
+        return kociemba.solve(kociemba_string, max_depth=max_depth).split()
 
     @staticmethod
     def rotate_matrix(matrix, cw=True):

@@ -1,7 +1,7 @@
 import copy
 import multiprocessing
 import random
-
+import time
 import numpy
 from deap import base, algorithms
 from deap import creator
@@ -27,7 +27,7 @@ class DKHO:
         self.EVAL_DEPTH = EVAL_DEPTH
         self.SELECTION_SIZE = SELECTION_SIZE
         self.PARSIMONY_SIZE = PARSIMONY_SIZE
-        self.shuffled_cube = cube_to_solve
+        self.shuffled_cube = copy.deepcopy(cube_to_solve)
         self.LAMBDA = LAMBDA
         self.gbest = 1000  # We set gbest to be high initially
 
@@ -58,15 +58,14 @@ class DKHO:
         mstats.register("std", numpy.std, axis=0)
         mstats.register("min", numpy.min, axis=0)
         mstats.register("max", numpy.max, axis=0)
-        logbook = tools.Logbook()
         hof = tools.HallOfFame(10)
 
+        start_time = time.time()
         swarm, logbook = self.eaMuPlusLambdaWithMoveSelection(swarm, toolbox, self.NUM_KRILL, self.LAMBDA, self.CXPB,
-                                                              self.MUTPB, self.NGEN, mstats,
-                                                              hof,
-                                                              verbose=True)
-
-        hof.update(swarm)
+                                                              self.MUTPB, self.NGEN, stats=mstats,
+                                                              halloffame=hof,
+                                                              verbose=False)
+        self.end_time = time.time() - start_time
         self.logbook = logbook
         self.hall_of_fame = hof
 
@@ -284,6 +283,8 @@ class DKHO:
     def get_logbook(self):
         return self.logbook
 
+    def get_time(self):
+        return self.end_time
 
 if __name__ == '__main__':
     shuffled_cube = cube.Cube(3)
