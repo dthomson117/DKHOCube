@@ -600,6 +600,16 @@ def create_csv():
         hof = hof
         log = log
         dkho_tt = tt
+        copy_cube = copy.deepcopy(cube_data[0])
+        start_time = time.time()
+        copy_cube.solve_kociemba()
+        kociemba_time = time.time() - start_time
+
+        if hof[0].fitness.values[0] == 0:
+            info.append((dkho_tt, kociemba_time, cube_data[1]))
+
+    plot_data = pandas.DataFrame(info, columns=['DKHO', 'Kociemba', 'Shuffle Length'])
+    plot_data.to_csv('time_data.csv')
 
 
 
@@ -622,10 +632,10 @@ if __name__ == "__main__":
 
     # implementation_comparison(get_best_params())
 
-    plot_solve_lengths_2()
+    #plot_solve_lengths_2()
     #plot_time()
     #plot_dkho_vs_koc_2()
     #plot_time_points()
     #plot_solve_lengths_outliers()
 
-    #create_csv()
+    create_csv()
