@@ -430,11 +430,38 @@ def plot_solve_lengths_2():
     print(len(plot_data))
 
     mean_data = plot_data.groupby('Shuffle Length', as_index=False)['Solution Length'].mean()
+    print(mean_data['Solution Length'].mean())
     sns.scatterplot(plot_data, x="Shuffle Length", y="Solution Length").set(
         title="Solution Length with Average (w/o Outliers)")
     sns.lineplot(mean_data['Solution Length'], color='red', legend='auto')
     plt.legend(labels=['Solution Length', 'Average'])
     plt.savefig('./images/Solution Length with Average (wo Outliers).png', dpi=300)
+    plt.show()
+
+def plot_solve_lengths_outliers():
+    data = read_pickle('time_opt_results.pkl')
+    info = []
+
+    for hof, log, tt, cube_data in data:
+        hof = hof
+        log = log
+        tt = tt
+
+        run_indv = hof[0]
+        shuffled_cube = cube_data
+
+        info.append((run_indv, shuffled_cube))
+
+    plot_data = pandas.DataFrame([(y[1], len(x)) for x, y in info], columns=['Shuffle Length', 'Solution Length'])
+    plot_data['Outlier'] = np.where((np.abs(stats.zscore(plot_data['Solution Length'])) < 2), False, True)
+    print(len(plot_data))
+    sns.set_theme(style="whitegrid")
+    mean_data = plot_data.groupby('Shuffle Length', as_index=False)['Solution Length'].mean()
+    sns.scatterplot(plot_data, x="Shuffle Length", y="Solution Length", hue='Outlier', style='Outlier', legend='auto').set(
+        title="Solution Length with Outliers")
+    #sns.lineplot(mean_data['Solution Length'], color='red', legend='full')
+    plt.legend(title="Outliers")
+    plt.savefig('./images/Solution Length Outliers.png', dpi=300)
     plt.show()
 
 
@@ -565,6 +592,17 @@ def implementation_comparison(best):
 
         print(end)
 
+def create_csv():
+    data = read_pickle('time_opt_results.pkl')
+    info = []
+
+    for hof, log, tt, cube_data in data:
+        hof = hof
+        log = log
+        dkho_tt = tt
+
+
+
 
 if __name__ == "__main__":
     # cubes_to_solve = create_test_cubes(25, linear=True)
@@ -588,3 +626,6 @@ if __name__ == "__main__":
     #plot_time()
     #plot_dkho_vs_koc_2()
     #plot_time_points()
+    #plot_solve_lengths_outliers()
+
+    #create_csv()
